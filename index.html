@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portföyüm</title>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #0b132b; color: #fff; padding: 15px; margin: 0; }
+        .card { background: #1c2541; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .btn { background: #2e7d32; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #3a506b; font-size: 13px; }
+        th { color: #64dfdf; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>📊 Portföy Takip</h2>
+        <button class="btn" onclick="excelAktar()">📊 Excel'e Aktar (.xlsx)</button>
+    </div>
+
+    <div class="card">
+        <table id="hisseTablosu">
+            <thead>
+                <tr><th>Hisse</th><th>Fiyat</th><th>Maliyet</th><th>Lot</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>SASA</td><td>2,25 TL</td><td>4,85 TL</td><td>18096</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function excelAktar() {
+            var wb = XLSX.utils.table_to_book(document.getElementById('hisseTablosu'));
+            XLSX.writeFile(wb, 'Portfoy_Raporu.xlsx');
+        }
+    </script>
+</body>
+</html>
