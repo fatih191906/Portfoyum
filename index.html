@@ -3,39 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm</title>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <title>Portföy Takip Uygulaması</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #0b132b; color: #fff; padding: 15px; margin: 0; }
-        .card { background: #1c2541; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
-        .btn { background: #2e7d32; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; font-weight: bold; width: 100%; font-size: 14px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid #3a506b; font-size: 13px; }
-        th { color: #64dfdf; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            background-color: #1e293b;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid #334155;
+        }
+        h1 {
+            color: #38bdf8;
+            margin-bottom: 0.5rem;
+        }
+        p {
+            color: #94a3b8;
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h2>📊 Portföy Takip</h2>
-        <button class="btn" onclick="excelAktar()">📊 Excel'e Aktar (.xlsx)</button>
+    <div class="container">
+        <h1>Portföy Takip Uygulaması</h1>
+        <p>Canlı yayın başarıyla başlatıldı!</p>
     </div>
-
-    <div class="card">
-        <table id="hisseTablosu">
-            <thead>
-                <tr><th>Hisse</th><th>Fiyat</th><th>Maliyet</th><th>Lot</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>SASA</td><td>2,25 TL</td><td>4,85 TL</td><td>18096</td></tr>
-            </tbody>
-        </table>
-    </div>
-
-    <script>
-        function excelAktar() {
-            var wb = XLSX.utils.table_to_book(document.getElementById('hisseTablosu'));
-            XLSX.writeFile(wb, 'Portfoy_Raporu.xlsx');
-        }
-    </script>
 </body>
 </html>
