@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v6</title>
+    <title>Portföyüm v7</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -206,9 +206,9 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v6</h1>
+        <h1>Portföyüm v7</h1>
         <div class="live-status" id="statusBadge">
-            <span class="pulse-dot"></span> <span id="statusText">Canlı BİST Servisi Aktif</span>
+            <span class="pulse-dot"></span> <span id="statusText">BİST Servisi Hazır</span>
         </div>
     </header>
 
@@ -248,7 +248,7 @@
     <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
         <div class="section-header-flex" style="padding: 0 20px;">
             <div class="section-title">Hisse Portföyü</div>
-            <button class="btn-refresh" onclick="fetchLivePrices()">🔄 Canlı Fiyatları Yenile</button>
+            <button class="btn-refresh" id="refreshBtn" onclick="fetchLivePrices()">🔄 Canlı Fiyatları Yenile</button>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -286,7 +286,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v6";
+    document.title = "Portföyüm v7";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
@@ -301,35 +301,50 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // YENİLENMİŞ YÜKSEK HIZLI CANLI VERİ SERVİSİ
+    // ÜÇ KADEMELİ GÜVENİLİR FİYAT MOTORU
     async function fetchSinglePrice(symbol) {
         const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
-        const timestamp = new Date().getTime(); // Önbelleği (cache) baypas etmek için
+        const ts = new Date().getTime();
 
-        // 1. Kanal: Mynet Finans / BİST Servisi
+        // 1. Kaynak: Yahoo Finance Query API
         try {
-            const url1 = `https://corsproxy.io/?${encodeURIComponent('https://finans.mynet.com/borsa/hisse/' + cleanSymbol + '/')}&_t=${timestamp}`;
-            const res1 = await fetch(url1);
+            const url1 = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS?interval=1m&range=1d&_=${ts}`;
+            const proxy1 = `https://api.allorigins.win/raw?url=${encodeURIComponent(url1)}`;
+            const res1 = await fetch(proxy1);
             if (res1.ok) {
-                const html = await res1.text();
-                const match = html.match(/<span class="[^\"]*dynamic-price[^\"]*"[^>]*>([0-9.,]+)<\/span>/i) || html.match(/([0-9]{1,4}[.,][0-9]{2})\s*₺/);
-                if (match && match[1]) {
-                    let priceVal = parseFloat(match[1].replace('.', '').replace(',', '.'));
-                    if (priceVal > 0) return priceVal;
+                const data1 = await res1.json();
+                const price1 = data1.chart.result[0].meta.regularMarketPrice;
+                if (price1 && price1 > 0) return parseFloat(price1);
+            }
+        } catch (e) {}
+
+        // 2. Kaynak: Stooq Finance API
+        try {
+            const url2 = `https://stooq.com/q/l/?s=${cleanSymbol}.tr&f=sd2t2ohlcv&h&e=csv&_=${ts}`;
+            const proxy2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(url2)}`;
+            const res2 = await fetch(proxy2);
+            if (res2.ok) {
+                const csvText = await res2.text();
+                const lines = csvText.split('\n');
+                if (lines.length > 1) {
+                    const cols = lines[1].split(',');
+                    const price2 = parseFloat(cols[6]);
+                    if (price2 && price2 > 0) return price2;
                 }
             }
         } catch (e) {}
 
-        // 2. Kanal: Google Finance API Endpoint
+        // 3. Kaynak: Google Finance Proxy
         try {
-            const url2 = `https://corsproxy.io/?${encodeURIComponent('https://www.google.com/finance/quote/' + cleanSymbol + ':IST')}&_t=${timestamp}`;
-            const res2 = await fetch(url2);
-            if (res2.ok) {
-                const text2 = await res2.text();
-                const match2 = text2.match(/data-last-price="([0-9.]+)"/);
-                if (match2 && match2[1]) {
-                    let priceVal2 = parseFloat(match2[1]);
-                    if (priceVal2 > 0) return priceVal2;
+            const url3 = `https://www.google.com/finance/quote/${cleanSymbol}:IST`;
+            const proxy3 = `https://api.allorigins.win/get?url=${encodeURIComponent(url3)}&_=${ts}`;
+            const res3 = await fetch(proxy3);
+            if (res3.ok) {
+                const data3 = await res3.json();
+                const match = data3.contents.match(/data-last-price="([0-9.]+)"/);
+                if (match && match[1]) {
+                    const price3 = parseFloat(match[1]);
+                    if (price3 && price3 > 0) return price3;
                 }
             }
         } catch (e) {}
@@ -391,25 +406,41 @@
     }
 
     async function fetchLivePrices() {
-        if (assets.length === 0) return;
-        
-        const statusText = document.getElementById('statusText');
-        if(statusText) statusText.innerText = "Fiyatlar güncelleniyor...";
+        if (assets.length === 0) {
+            alert("Sorgulanacak hisse bulunamadı. Lütfen önce hisse ekleyin.");
+            return;
+        }
 
-        let hasUpdate = false;
+        const statusText = document.getElementById('statusText');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        if(statusText) statusText.innerText = "Canlı Veriler Çekiliyor...";
+        if(refreshBtn) {
+            refreshBtn.disabled = true;
+            refreshBtn.innerText = "⏳ Güncelleniyor...";
+        }
+
+        let updatedCount = 0;
         for (let item of assets) {
             const livePrice = await fetchSinglePrice(item.symbol);
-            if (livePrice && livePrice > 0 && livePrice !== item.currentPrice) {
+            if (livePrice && livePrice > 0) {
                 item.currentPrice = livePrice;
-                hasUpdate = true;
+                updatedCount++;
             }
         }
 
-        if (hasUpdate) {
+        if (updatedCount > 0) {
             saveAndRender();
+            if(statusText) statusText.innerText = `Son Güncelleme: ${new Date().toLocaleTimeString('tr-TR')}`;
+        } else {
+            if(statusText) statusText.innerText = "Veri Çekilemedi (Manuel Fiyatı Kullanın)";
+            alert("Canlı fiyat sunucusuna bağlanılamadı. Borsanın açık olduğundan emin olun veya 'Fiyat Değiştir' butonundan manuel güncelleyin.");
         }
 
-        if(statusText) statusText.innerText = "Canlı BİST Servisi Aktif";
+        if(refreshBtn) {
+            refreshBtn.disabled = false;
+            refreshBtn.innerText = "🔄 Canlı Fiyatları Yenile";
+        }
     }
 
     function updatePriceManual(index) {
@@ -503,7 +534,6 @@
 
     render();
     fetchLivePrices();
-    setInterval(fetchLivePrices, 10000);
 </script>
 
 </body>
