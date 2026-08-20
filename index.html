@@ -10,6 +10,7 @@
         body { background-color: #f8f9fa; }
         .hidden-engine { display: none; } /* Gizli veri motoru alanı */
         .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .detay-satir { background-color: #f1f3f5 !important; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -47,7 +48,7 @@
             <!-- İşlem Ekleme Formu -->
             <div class="col-md-4 mb-4">
                 <div class="card p-4">
-                    <h5 class="mb-3">İşlem / Portföy Ekle</h5>
+                    <h5 class="mb-3">İşlem / Alım Ekle</h5>
                     <div class="mb-3">
                         <label class="form-label">Hisse Kodu</label>
                         <input type="text" id="hisseKodu" class="form-control" placeholder="Örn: SASA, EREGL">
@@ -60,7 +61,7 @@
                         <label class="form-label">Birim Maliyet (TL)</label>
                         <input type="number" id="hisseMaliyet" class="form-control" step="0.01" value="10.00">
                     </div>
-                    <button class="btn btn-primary w-100" onclick="portfoyeEkle()">Portföye Kaydet</button>
+                    <button class="btn btn-primary w-100" onclick="portfoyeEkle()">Alım Ekle</button>
                 </div>
             </div>
 
@@ -72,9 +73,10 @@
                         <table class="table table-hover align-middle" id="portfoyTablosu">
                             <thead class="table-light">
                                 <tr>
+                                    <th></th>
                                     <th>Hisse</th>
-                                    <th>Adet</th>
-                                    <th>Maliyet</th>
+                                    <th>Toplam Adet</th>
+                                    <th>Ort. Maliyet</th>
                                     <th>Güncel Fiyat</th>
                                     <th>Toplam Değer</th>
                                     <th>Kâr / Zarar</th>
@@ -92,7 +94,6 @@
     </div>
 
     <script>
-        // Gizli veri motorunun fiyat havuzu (Google Finance mantığıyla arkada beslenen veri)
         let veriMotoru = JSON.parse(localStorage.getItem('user_veri_motoru')) || {
             "SASA": 42.50,
             "EREGL": 51.20,
@@ -100,6 +101,7 @@
             "GARAN": 95.40
         };
 
+        // portfoy yapısı: Her hisse kendi içinde işlemler (islemler) dizisini tutacak
         let portfoy = JSON.parse(localStorage.getItem('user_portfoy')) || [];
 
         function toggleEngine() {
@@ -130,22 +132,41 @@
                 return;
             }
 
-            // DÜZELTME: Eğer gizli veri motorunda bu hisse yoksa, 
-            // maliyetin biraz üzerinde (örneğin %5 karda simüle edilmiş) canlı fiyat atayalım ki farkı görebilelim.
-            // Gerçek sistemde buraya Google Finance / API fiyatı gelir.
             if (!veriMotoru[kod]) {
-                veriMotoru[kod] = maliyet * 1.05; // Örnek olması için maliyetin %5 üstü güncel fiyat kabul ettik
+                veriMotoru[kod] = maliyet * 1.05; // Simüle edilmiş canlı fiyat
                 localStorage.setItem('user_veri_motoru', JSON.stringify(veriMotoru));
             }
 
-            portfoy.push({ kod, adet, maliyet });
+            let mevcutHisse = portfoy.find(item => item.kod === kod);
+            let yeniIslem = { adet: adet, maliyet: maliyet, tarih: new Date().toLocaleDateString() };
+
+            if (mevcutHisse) {
+                mevcutHisse.islemGecmisi.push(yeniIslem);
+                hesaplaOrtalama(mevcutHisse);
+            } else {
+                portfoy.push({
+                    kod: kod,
+                    islemGecmisi: [yeniIslem],
+                    toplamAdet: adet,
+                    ortMaliyet: maliyet
+                });
+            }
+
             localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
-            
             portfoyuCiz();
             gizliTabloyuGuncelle();
-            
-            // Formu temizle
             document.getElementById('hisseKodu').value = "";
+        }
+
+        function hesaplaOrtalama(hisseObj) {
+            let toplamMaliyetTutar = 0;
+            let toplamAdet = 0;
+            hisseObj.islemGecmisi.forEach(islem => {
+                toplamMaliyetTutar += (islem.adet * islem.maliyet);
+                toplamAdet += islem.adet;
+            });
+            hisseObj.toplamAdet = toplamAdet;
+            hisseObj.ortMaliyet = toplamMaliyetTutar / toplamAdet;
         }
 
         function portfoyuCiz() {
@@ -153,39 +174,86 @@
             tbody.innerHTML = "";
 
             if (portfoy.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Henüz portföyünüze eklenmiş bir hisse yok.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Henüz portföyünüze eklenmiş bir hisse yok.</td></tr>`;
                 return;
             }
 
             portfoy.forEach((item, index) => {
-                // Fiyatı doğrudan gizli veri motorundan çekiyoruz!
-                let guncelFiyat = veriMotoru[item.kod] !== undefined ? veriMotoru[item.kod] : item.maliyet;
-                let toplamDeger = item.adet * guncelFiyat;
-                let toplamMaliyet = item.adet * item.maliyet;
-                let karZarar = toplamDeger - toplamMaliyet;
+                let guncelFiyat = veriMotoru[item.kod] !== undefined ? veriMotoru[item.kod] : item.ortMaliyet;
+                let toplamDeger = item.toplamAdet * guncelFiyat;
+                let toplamMaliyetTutar = item.toplamAdet * item.ortMaliyet;
+                let karZarar = toplamDeger - toplamMaliyetTutar;
                 let renkClass = karZarar >= 0 ? "text-success" : "text-danger";
 
+                // Ana Satır
                 tbody.innerHTML += `
                     <tr>
+                        <td><button class="btn btn-sm btn-outline-primary" onclick="detayAcKapat(${index})" id="btn-detay-${index}">➕</button></td>
                         <td><b>${item.kod}</b></td>
-                        <td>${item.adet}</td>
-                        <td>${item.maliyet.toFixed(2)} TL</td>
+                        <td>${item.toplamAdet}</td>
+                        <td>${item.ortMaliyet.toFixed(2)} TL</td>
                         <td>${guncelFiyat.toFixed(2)} TL</td>
                         <td>${toplamDeger.toFixed(2)} TL</td>
                         <td class="${renkClass} fw-bold">${karZarar.toFixed(2)} TL</td>
-                        <td><button class="btn btn-sm btn-outline-danger" onclick="sil(${index})">Sil</button></td>
+                        <td><button class="btn btn-sm btn-outline-danger" onclick="hisseSil(${index})Hisse">Sil</button></td>
+                    </tr>
+                    <tr id="detay-row-${index}" style="display: none;" class="detay-satir">
+                        <td colspan="8">
+                            <div class="p-2">
+                                <strong>İşlem Geçmişi (${item.kod}):</strong>
+                                <ul class="mb-0 mt-1 ps-3" id="gecmis-list-${index}">
+                                    <!-- Alt işlemler buraya doldurulacak -->
+                                </ul>
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
+
+            // Alt listeleri doldur
+            portfoy.forEach((item, index) => {
+                let ul = document.getElementById(`gecmis-list-${index}`);
+                if(ul) {
+                    item.islemGecmisi.forEach((islem, i) => {
+                        ul.innerHTML += `<li>${islem.tarih} - <b>${islem.adet} Adet</b> | Birim Maliyet: <b>${islem.maliyet.toFixed(2)} TL</b> <button class="btn btn-xxs text-danger p-0 ms-2" onclick="islemSil(${index}, ${i})" title="Bu alımı sil">✖</button></li>`;
+                    });
+                }
+            });
         }
 
-        function sil(index) {
+        function detayAcKapat(index) {
+            let row = document.getElementById(`detay-row-${index}`);
+            let btn = document.getElementById(`btn-detay-${index}`);
+            if (row.style.display === "none") {
+                row.style.display = "table-row";
+                btn.innerText = "➖";
+                btn.classList.remove("btn-outline-primary");
+                btn.classList.add("btn-primary");
+            } else {
+                row.style.display = "none";
+                btn.innerText = "➕";
+                btn.classList.remove("btn-primary");
+                btn.classList.add("btn-outline-primary");
+            }
+        }
+
+        function islemSil(hisseIndex, islemIndex) {
+            portfoy[hisseIndex].islemGecmisi.splice(islemIndex, 1);
+            if (portfoy[hisseIndex].islemGecmisi.length === 0) {
+                portfoy.splice(hisseIndex, 1);
+            } else {
+                hesaplaOrtalama(portfoy[hisseIndex]);
+            }
+            localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
+            portfoyuCiz();
+        }
+
+        function hisseSil(index) {
             portfoy.splice(index, 1);
             localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
             portfoyuCiz();
         }
 
-        // Sayfa açıldığında portföyü ve gizli motoru yükle
         window.onload = function() {
             portfoyuCiz();
             gizliTabloyuGuncelle();
