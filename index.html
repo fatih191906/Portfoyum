@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v5</title>
+    <title>Portföyüm v6</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -50,9 +50,9 @@
             color: var(--green-text);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             background-color: var(--green-bg);
-            padding: 6px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
             border: 1px solid rgba(52, 211, 153, 0.2);
         }
@@ -98,7 +98,14 @@
             margin-bottom: 24px;
         }
 
-        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; }
+        .section-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title { font-size: 1.1rem; font-weight: 600; }
 
         .form-grid {
             display: grid;
@@ -129,6 +136,22 @@
         }
 
         button.btn-primary:hover { background-color: var(--accent-hover); color: #fff; }
+
+        .btn-refresh {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-refresh:hover {
+            background-color: var(--accent-primary);
+            color: #0b0f19;
+        }
 
         .table-container {
             overflow-x: auto;
@@ -183,9 +206,9 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v5</h1>
+        <h1>Portföyüm v6</h1>
         <div class="live-status" id="statusBadge">
-            <span class="pulse-dot"></span> Canlı Veri Servisi
+            <span class="pulse-dot"></span> <span id="statusText">Canlı BİST Servisi Aktif</span>
         </div>
     </header>
 
@@ -211,7 +234,7 @@
 
     <!-- VARLIK EKLEME FORMU -->
     <div class="section-card">
-        <div class="section-title">Yeni BİST Hissesi Ekle / Güncelle</div>
+        <div class="section-title" style="margin-bottom: 16px;">Yeni BİST Hissesi Ekle / Güncelle</div>
         <div class="form-grid">
             <input type="text" id="symbol" placeholder="Hisse Kodu (Örn: SASA)" style="text-transform:uppercase">
             <input type="text" id="amount" placeholder="Adet (Örn: 100)">
@@ -222,8 +245,12 @@
     </div>
 
     <!-- PORTFÖY TABLOSU -->
-    <div class="section-card" style="padding: 0; overflow: hidden;">
-        <div class="table-container">
+    <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
+        <div class="section-header-flex" style="padding: 0 20px;">
+            <div class="section-title">Hisse Portföyü</div>
+            <button class="btn-refresh" onclick="fetchLivePrices()">🔄 Canlı Fiyatları Yenile</button>
+        </div>
+        <div class="table-container" style="border: none; border-radius: 0;">
             <table>
                 <thead>
                     <tr>
@@ -245,7 +272,7 @@
 
     <!-- MALİYET HESAPLAYICI -->
     <div class="section-card">
-        <div class="section-title">Ağırlıklı Ortalama Maliyet Hesaplayıcı</div>
+        <div class="section-title" style="margin-bottom: 16px;">Ağırlıklı Ortalama Maliyet Hesaplayıcı</div>
         <div class="calc-grid">
             <input type="text" id="calcOldQty" placeholder="Mevcut Adet" oninput="calculateNewCost()">
             <input type="text" id="calcOldCost" placeholder="Mevcut Maliyet (₺)" oninput="calculateNewCost()">
@@ -259,7 +286,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v5";
+    document.title = "Portföyüm v6";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
@@ -274,46 +301,36 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // 3 KADEMELİ CANLI FİYAT SERVİSİ
-    async function fetchPriceFromBist(symbol) {
+    // YENİLENMİŞ YÜKSEK HIZLI CANLI VERİ SERVİSİ
+    async function fetchSinglePrice(symbol) {
         const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
+        const timestamp = new Date().getTime(); // Önbelleği (cache) baypas etmek için
 
-        // 1. Kaynak: Bigpara / Hürriyet API
+        // 1. Kanal: Mynet Finans / BİST Servisi
         try {
-            const url1 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://bigpara.hurriyet.com.tr/api/v1/hisse/detay/' + cleanSymbol)}`;
+            const url1 = `https://corsproxy.io/?${encodeURIComponent('https://finans.mynet.com/borsa/hisse/' + cleanSymbol + '/')}&_t=${timestamp}`;
             const res1 = await fetch(url1);
             if (res1.ok) {
-                const data1 = await res1.json();
-                const parsed = JSON.parse(data1.contents);
-                if (parsed && parsed.data && parsed.data.kapanis) {
-                    return parseFloat(parsed.data.kapanis);
+                const html = await res1.text();
+                const match = html.match(/<span class="[^\"]*dynamic-price[^\"]*"[^>]*>([0-9.,]+)<\/span>/i) || html.match(/([0-9]{1,4}[.,][0-9]{2})\s*₺/);
+                if (match && match[1]) {
+                    let priceVal = parseFloat(match[1].replace('.', '').replace(',', '.'));
+                    if (priceVal > 0) return priceVal;
                 }
             }
         } catch (e) {}
 
-        // 2. Kaynak: Google Finance Scraping Proxy
+        // 2. Kanal: Google Finance API Endpoint
         try {
-            const url2 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://www.google.com/finance/quote/' + cleanSymbol + ':IST')}`;
+            const url2 = `https://corsproxy.io/?${encodeURIComponent('https://www.google.com/finance/quote/' + cleanSymbol + ':IST')}&_t=${timestamp}`;
             const res2 = await fetch(url2);
             if (res2.ok) {
-                const data2 = await res2.json();
-                const match = data2.contents.match(/data-last-price="([0-9.]+)"/);
-                if (match && match[1]) {
-                    return parseFloat(match[1]);
+                const text2 = await res2.text();
+                const match2 = text2.match(/data-last-price="([0-9.]+)"/);
+                if (match2 && match2[1]) {
+                    let priceVal2 = parseFloat(match2[1]);
+                    if (priceVal2 > 0) return priceVal2;
                 }
-            }
-        } catch (e) {}
-
-        // 3. Kaynak: Yahoo Direct
-        try {
-            const url3 = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS`;
-            const proxy3 = `https://api.allorigins.win/get?url=${encodeURIComponent(url3)}`;
-            const res3 = await fetch(proxy3);
-            if (res3.ok) {
-                const data3 = await res3.json();
-                const parsed3 = JSON.parse(data3.contents);
-                const price3 = parsed3.chart.result[0].meta.regularMarketPrice;
-                if (price3 && price3 > 0) return price3;
             }
         } catch (e) {}
 
@@ -376,17 +393,23 @@
     async function fetchLivePrices() {
         if (assets.length === 0) return;
         
+        const statusText = document.getElementById('statusText');
+        if(statusText) statusText.innerText = "Fiyatlar güncelleniyor...";
+
         let hasUpdate = false;
         for (let item of assets) {
-            const livePrice = await fetchPriceFromBist(item.symbol);
+            const livePrice = await fetchSinglePrice(item.symbol);
             if (livePrice && livePrice > 0 && livePrice !== item.currentPrice) {
                 item.currentPrice = livePrice;
                 hasUpdate = true;
             }
         }
+
         if (hasUpdate) {
             saveAndRender();
         }
+
+        if(statusText) statusText.innerText = "Canlı BİST Servisi Aktif";
     }
 
     function updatePriceManual(index) {
@@ -480,7 +503,7 @@
 
     render();
     fetchLivePrices();
-    setInterval(fetchLivePrices, 15000);
+    setInterval(fetchLivePrices, 10000);
 </script>
 
 </body>
