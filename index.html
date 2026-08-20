@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BİST Portföy Takip v2</title>
+    <title>BİST Portföy Takip v3</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -102,7 +102,7 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 120px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) 120px;
             gap: 12px;
         }
 
@@ -147,15 +147,19 @@
         .positive { color: var(--green-text); }
         .negative { color: var(--red-text); }
 
-        .btn-delete {
+        .btn-action {
             background-color: transparent;
-            color: var(--red-text);
             border: 1px solid var(--card-border);
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: 6px;
             cursor: pointer;
+            font-size: 0.75rem;
+            color: var(--text-main);
+            margin-right: 4px;
         }
 
+        .btn-action:hover { background-color: var(--card-border); }
+        .btn-delete { color: var(--red-text); }
         .btn-delete:hover { background-color: var(--red-bg); }
 
         .calc-grid {
@@ -179,9 +183,9 @@
 
 <div class="container">
     <header>
-        <h1>BİST Portföy Takip v2</h1>
+        <h1>BİST Portföy Takip v3</h1>
         <div class="live-status">
-            <span class="pulse-dot"></span> Canlı Veri Yayını
+            <span class="pulse-dot"></span> Canlı Veri Servisi
         </div>
     </header>
 
@@ -208,12 +212,15 @@
     <!-- VARLIK EKLEME FORMU -->
     <div class="section-card">
         <div class="section-title">Yeni BİST Hissesi Ekle</div>
-        <div class="form-grid">
-            <input type="text" id="symbol" placeholder="Hisse Kodu (Örn: SASA)" style="text-transform:uppercase">
-            <input type="number" id="amount" placeholder="Adet" step="any">
-            <input type="number" id="avgCost" placeholder="Ort. Maliyet (₺ - İsteğe Bağlı)" step="any">
-            <button class="btn-primary" onclick="addAsset()">Ekle</button>
-        </div>
+        <form id="assetForm" onsubmit="addAsset(event)">
+            <div class="form-grid">
+                <input type="text" id="symbol" placeholder="Hisse Kodu (Örn: SASA)" style="text-transform:uppercase" required>
+                <input type="number" id="amount" placeholder="Adet" step="any" required>
+                <input type="number" id="avgCost" placeholder="Ort. Maliyet (₺)" step="any">
+                <input type="number" id="currentPriceInput" placeholder="Güncel Fiyat (₺)" step="any">
+                <button type="submit" class="btn-primary">Ekle</button>
+            </div>
+        </form>
     </div>
 
     <!-- PORTFÖY TABLOSU -->
@@ -229,7 +236,7 @@
                         <th>Toplam Değer</th>
                         <th>Kar / Zarar</th>
                         <th>Oran (%)</th>
-                        <th>İşlem</th>
+                        <th>İşlemler</th>
                     </tr>
                 </thead>
                 <tbody id="assetList">
@@ -262,57 +269,52 @@
     }
 
     async function fetchPriceFromBist(symbol) {
+        const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
         try {
-            const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
-            const res = await fetch(`https://scanner.tradingview.com/turkey/scan`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    symbols: { tickers: [`BIST:${cleanSymbol}`] },
-                    columns: ["close"]
-                })
-            });
+            // Yahoo Finance API üzerinden fiyat çekme
+            const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+            
+            const res = await fetch(proxyUrl);
+            if (!res.ok) return null;
+            
             const data = await res.json();
-            if (data && data.data && data.data.length > 0) {
-                return data.data[0].d[0];
-            }
-            return null;
+            const parsed = JSON.parse(data.contents);
+            const price = parsed.chart.result[0].meta.regularMarketPrice;
+            return price || null;
         } catch (e) {
             return null;
         }
     }
 
-    function addAsset() {
+    function addAsset(e) {
+        e.preventDefault();
+
         const symbolInput = document.getElementById('symbol');
         const amountInput = document.getElementById('amount');
         const avgCostInput = document.getElementById('avgCost');
+        const currentPriceInput = document.getElementById('currentPriceInput');
 
         const symbol = symbolInput.value.trim().toUpperCase().replace('.IS', '');
-        const amount = parseFloat(amountInput.value);
-        let avgCost = parseFloat(avgCostInput.value);
+        const amount = parseFloat(amountInput.value) || 0;
+        let avgCost = parseFloat(avgCostInput.value) || 0;
+        let manualPrice = parseFloat(currentPriceInput.value) || 0;
 
-        if (!symbol) {
-            alert('Lütfen Hisse Kodunu girin.');
-            return;
-        }
-        if (isNaN(amount) || amount <= 0) {
-            alert('Lütfen geçerli bir Adet girin.');
-            return;
-        }
-        if (isNaN(avgCost)) {
-            avgCost = 0;
-        }
+        if (!symbol || amount <= 0) return;
+
+        // Fiyat veya maliyet girilmediyse birbirine eşitle
+        const initialPrice = manualPrice > 0 ? manualPrice : (avgCost > 0 ? avgCost : 1);
+        if (avgCost === 0) avgCost = initialPrice;
 
         assets.push({ 
             symbol: symbol, 
             amount: amount, 
             avgCost: avgCost, 
-            currentPrice: avgCost 
+            currentPrice: initialPrice 
         });
 
-        symbolInput.value = '';
-        amountInput.value = '';
-        avgCostInput.value = '';
+        // Formu Sıfırla
+        document.getElementById('assetForm').reset();
 
         saveAndRender();
         fetchLivePrices();
@@ -326,11 +328,19 @@
             const livePrice = await fetchPriceFromBist(item.symbol);
             if (livePrice && livePrice !== item.currentPrice) {
                 item.currentPrice = livePrice;
-                if(item.avgCost === 0) item.avgCost = livePrice;
                 hasUpdate = true;
             }
         }
         if (hasUpdate) {
+            saveAndRender();
+        }
+    }
+
+    function updatePriceManual(index) {
+        const item = assets[index];
+        const newPrice = prompt(`${item.symbol} için yeni güncel fiyatı girin:`, item.currentPrice);
+        if (newPrice !== null && !isNaN(parseFloat(newPrice))) {
+            item.currentPrice = parseFloat(newPrice);
             saveAndRender();
         }
     }
@@ -371,7 +381,10 @@
                 <td>₺${itemVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td class="${isPos ? 'positive' : 'negative'}">₺${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td><span class="badge ${isPos ? 'badge-positive' : 'badge-negative'}">%${ratio.toFixed(2)}</span></td>
-                <td><button class="btn-delete" onclick="deleteAsset(${index})">Sil</button></td>
+                <td>
+                    <button class="btn-action" onclick="updatePriceManual(${index})">Fiyat Değiştir</button>
+                    <button class="btn-action btn-delete" onclick="deleteAsset(${index})">Sil</button>
+                </td>
             `;
             list.appendChild(row);
         });
@@ -413,7 +426,7 @@
 
     render();
     fetchLivePrices();
-    setInterval(fetchLivePrices, 15000);
+    setInterval(fetchLivePrices, 20000);
 </script>
 
 </body>
