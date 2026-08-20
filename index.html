@@ -5,37 +5,313 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portföy Takip Uygulaması</title>
     <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --green: #22c55e;
+            --red: #ef4444;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             margin: 0;
+            padding: 20px;
         }
+
         .container {
-            text-align: center;
-            padding: 2rem;
-            background-color: #1e293b;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            border: 1px solid #334155;
+            max-width: 1000px;
+            margin: 0 auto;
         }
-        h1 {
-            color: #38bdf8;
-            margin-bottom: 0.5rem;
+
+        h1, h2 {
+            margin-top: 0;
         }
-        p {
-            color: #94a3b8;
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .card-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) 100px;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        button {
+            background-color: var(--accent-blue);
+            color: #000;
+            font-weight: bold;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #111827;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .positive { color: var(--green); }
+        .negative { color: var(--red); }
+
+        .btn-delete {
+            background-color: transparent;
+            color: var(--red);
+            padding: 4px 8px;
+            border: 1px solid var(--red);
+        }
+
+        .btn-delete:hover {
+            background-color: var(--red);
+            color: #fff;
+        }
+
+        .calc-box {
+            margin-top: 30px;
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Portföy Takip Uygulaması</h1>
-        <p>Canlı yayın başarıyla başlatıldı!</p>
+
+<div class="container">
+    <h1 style="color: var(--accent-blue);">Portföy Takip & Maliyet Hesaplayıcı</h1>
+
+    <!-- ÖZET KARTLARI -->
+    <div class="grid">
+        <div class="card">
+            <div class="card-title">Portföy Değeri</div>
+            <div class="card-value" id="totalValue">₺0.00</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Toplam Maliyet</div>
+            <div class="card-value" id="totalCost">₺0.00</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Toplam Kar / Zarar</div>
+            <div class="card-value" id="totalProfit">₺0.00</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Kar Oranı</div>
+            <div class="card-value" id="totalProfitRatio">%0.00</div>
+        </div>
     </div>
+
+    <!-- VARLIK EKLEME FORMU -->
+    <div class="card" style="margin-bottom: 25px;">
+        <h2 style="font-size: 1.1rem; margin-bottom: 15px;">Yeni Varlık Ekle</h2>
+        <div class="form-group">
+            <input type="text" id="symbol" placeholder="Kod (Örn: SASA)" style="text-transform:uppercase">
+            <input type="number" id="amount" placeholder="Adet" step="any">
+            <input type="number" id="avgCost" placeholder="Maliyet (₺)" step="any">
+            <input type="number" id="currentPrice" placeholder="Güncel Fiyat (₺)" step="any">
+            <button onclick="addAsset()">Ekle</button>
+        </div>
+    </div>
+
+    <!-- PORTFÖY TABLOSU -->
+    <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Kod</th>
+                    <th>Adet</th>
+                    <th>Ort. Maliyet</th>
+                    <th>Güncel Fiyat</th>
+                    <th>Toplam Değer</th>
+                    <th>Kar / Zarar</th>
+                    <th>Oran (%)</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody id="assetList">
+                <!-- Veriler buraya eklenecek -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MALİYET HESAPLAYICI -->
+    <div class="card calc-box">
+        <h2 style="font-size: 1.1rem; margin-bottom: 15px;">Ağırlıklı Ortalama Maliyet Hesaplayıcı</h2>
+        <div class="calc-grid">
+            <input type="number" id="calcOldQty" placeholder="Mevcut Adet" oninput="calculateNewCost()">
+            <input type="number" id="calcOldCost" placeholder="Mevcut Maliyet" oninput="calculateNewCost()">
+            <input type="number" id="calcNewQty" placeholder="Yeni Alınan Adet" oninput="calculateNewCost()">
+            <input type="number" id="calcNewPrice" placeholder="Yeni Alış Fiyatı" oninput="calculateNewCost()">
+        </div>
+        <div style="margin-top: 15px; font-weight: bold; font-size: 1.1rem;" id="calcResult">
+            Yeni Ortalama Maliyet: ₺0.00
+        </div>
+    </div>
+</div>
+
+<script>
+    let assets = JSON.parse(localStorage.getItem('my_assets')) || [];
+
+    function saveAndRender() {
+        localStorage.setItem('my_assets', JSON.stringify(assets));
+        render();
+    }
+
+    function addAsset() {
+        const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+        const amount = parseFloat(document.getElementById('amount').value);
+        const avgCost = parseFloat(document.getElementById('avgCost').value);
+        const currentPrice = parseFloat(document.getElementById('currentPrice').value);
+
+        if (!symbol || isNaN(amount) || isNaN(avgCost) || isNaN(currentPrice)) {
+            alert('Lütfen tüm alanları doğru şekilde doldurun.');
+            return;
+        }
+
+        assets.push({ symbol, amount, avgCost, currentPrice });
+        
+        document.getElementById('symbol').value = '';
+        document.getElementById('amount').value = '';
+        document.getElementById('avgCost').value = '';
+        document.getElementById('currentPrice').value = '';
+
+        saveAndRender();
+    }
+
+    function deleteAsset(index) {
+        assets.splice(index, 1);
+        saveAndRender();
+    }
+
+    function render() {
+        const list = document.getElementById('assetList');
+        list.innerHTML = '';
+
+        let totalVal = 0;
+        let totalCst = 0;
+
+        assets.forEach((item, index) => {
+            const itemCost = item.amount * item.avgCost;
+            const itemVal = item.amount * item.currentPrice;
+            const profit = itemVal - itemCost;
+            const ratio = itemCost > 0 ? (profit / itemCost) * 100 : 0;
+
+            totalVal += itemVal;
+            totalCst += itemCost;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><b>${item.symbol}</b></td>
+                <td>${item.amount.toLocaleString()}</td>
+                <td>₺${item.avgCost.toFixed(2)}</td>
+                <td>₺${item.currentPrice.toFixed(2)}</td>
+                <td>₺${itemVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td class="${profit >= 0 ? 'positive' : 'negative'}">₺${profit.toFixed(2)}</td>
+                <td class="${ratio >= 0 ? 'positive' : 'negative'}">%${ratio.toFixed(2)}</td>
+                <td><button class="btn-delete" onclick="deleteAsset(${index})">Sil</button></td>
+            `;
+            list.appendChild(row);
+        });
+
+        const totalProfit = totalVal - totalCst;
+        const totalRatio = totalCst > 0 ? (totalProfit / totalCst) * 100 : 0;
+
+        document.getElementById('totalValue').innerText = `₺${totalVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('totalCost').innerText = `₺${totalCst.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        
+        const profitEl = document.getElementById('totalProfit');
+        profitEl.innerText = `₺${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        profitEl.className = `card-value ${totalProfit >= 0 ? 'positive' : 'negative'}`;
+
+        const ratioEl = document.getElementById('totalProfitRatio');
+        ratioEl.innerText = `%${totalRatio.toFixed(2)}`;
+        ratioEl.className = `card-value ${totalRatio >= 0 ? 'positive' : 'negative'}`;
+    }
+
+    function calculateNewCost() {
+        const oldQty = parseFloat(document.getElementById('calcOldQty').value) || 0;
+        const oldCost = parseFloat(document.getElementById('calcOldCost').value) || 0;
+        const newQty = parseFloat(document.getElementById('calcNewQty').value) || 0;
+        const newPrice = parseFloat(document.getElementById('calcNewPrice').value) || 0;
+
+        const totalQty = oldQty + newQty;
+        if (totalQty === 0) {
+            document.getElementById('calcResult').innerText = 'Yeni Ortalama Maliyet: ₺0.00';
+            return;
+        }
+
+        const totalCostSum = (oldQty * oldCost) + (newQty * newPrice);
+        const finalAvgCost = totalCostSum / totalQty;
+
+        document.getElementById('calcResult').innerText = `Yeni Ortalama Maliyet: ₺${finalAvgCost.toFixed(2)} (Toplam Adet: ${totalQty})`;
+    }
+
+    render();
+</script>
+
 </body>
 </html>
