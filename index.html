@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v31</title>
+    <title>Portföyüm v32</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -111,11 +111,11 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 140px;
+            grid-template-columns: 1fr 1fr 1fr 1fr 140px;
             gap: 12px;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .form-grid { grid-template-columns: 1fr; }
         }
 
@@ -143,22 +143,6 @@
         }
 
         button.btn-primary:hover { background-color: var(--accent-hover); color: #fff; }
-
-        .btn-refresh {
-            background-color: rgba(56, 189, 248, 0.1);
-            color: var(--accent-primary);
-            border: 1px solid var(--accent-primary);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-refresh:hover { background-color: var(--accent-primary); color: #0b0f19; }
 
         .table-container {
             overflow-x: auto;
@@ -189,6 +173,18 @@
         .btn-delete { color: var(--red-text); }
         .btn-delete:hover { background-color: var(--red-bg); }
 
+        .price-input {
+            width: 110px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-align: right;
+            border: 1px solid var(--card-border);
+            background-color: var(--bg-color);
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
         .calc-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -210,10 +206,10 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v31 🚀</h1>
+        <h1>Portföyüm v32 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
-            <span id="statusText">Portföy Aktif</span>
+            <span id="statusText">Kararlı Mod Aktif</span>
         </div>
     </header>
 
@@ -244,6 +240,7 @@
             <input type="text" id="symbol" placeholder="Hisse (Örn: SASA)" style="text-transform:uppercase">
             <input type="text" id="amount" placeholder="Adet (Örn: 1000)">
             <input type="text" id="avgCost" placeholder="Ort. Maliyet (₺)">
+            <input type="text" id="currentPriceInput" placeholder="Güncel Fiyat (₺)">
             <button type="button" class="btn-primary" onclick="addAsset()">Hisse Ekle</button>
         </div>
     </div>
@@ -252,7 +249,6 @@
     <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
         <div class="section-header-flex" style="padding: 0 20px;">
             <div class="section-title" style="margin: 0;">Hisse Portföyü</div>
-            <button class="btn-refresh" onclick="fetchAllPrices()">🔄 Fiyatları Güncelle</button>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -290,12 +286,12 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v31";
+    document.title = "Portföyüm v32";
 
-    let assets = JSON.parse(localStorage.getItem('bist_assets_v31')) || [];
+    let assets = JSON.parse(localStorage.getItem('bist_assets_v32')) || [];
 
     function saveAndRender() {
-        localStorage.setItem('bist_assets_v31', JSON.stringify(assets));
+        localStorage.setItem('bist_assets_v32', JSON.stringify(assets));
         render();
     }
 
@@ -306,70 +302,34 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // Arka planda güvenilir bir API üzerinden BIST anlık fiyatını çeken fonksiyon
-    async function fetchBistPrice(symbol) {
-        try {
-            let cleanSymbol = symbol.toUpperCase().replace('.IS', '').trim();
-            // BIST verilerini CORS engeline takılmadan güvenle sağlayan genel finans uç noktası
-            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS?interval=1d`;
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-            
-            const response = await fetch(proxyUrl);
-            const data = await response.json();
-            
-            if (data && data.chart && data.chart.result && data.chart.result[0]) {
-                const meta = data.chart.result[0].meta;
-                const price = meta.regularMarketPrice || meta.chartPreviousClose;
-                if (price) return parseFloat(price);
-            }
-        } catch (e) {
-            console.log(`${symbol} fiyatı alınamadı.`);
+    function updateInlinePrice(index, newPriceVal) {
+        let price = parseNum(newPriceVal);
+        if (price >= 0) {
+            assets[index].currentPrice = price;
+            saveAndRender();
         }
-        return null;
     }
 
-    async function fetchAllPrices() {
-        if (assets.length === 0) return;
-
-        const statusText = document.getElementById('statusText');
-        statusText.innerText = "Fiyatlar güncelleniyor...";
-
-        for (let i = 0; i < assets.length; i++) {
-            let livePrice = await fetchBistPrice(assets[i].symbol);
-            if (livePrice && livePrice > 0) {
-                assets[i].currentPrice = livePrice;
-            }
-        }
-
-        saveAndRender();
-        statusText.innerText = `Güncellendi: ${new Date().toLocaleTimeString('tr-TR')}`;
-        setTimeout(() => { statusText.innerText = "Portföy Aktif"; }, 3000);
-    }
-
-    async function addAsset() {
+    function addAsset() {
         const symbolInput = document.getElementById('symbol');
         const amountInput = document.getElementById('amount');
         const avgCostInput = document.getElementById('avgCost');
+        const currentPriceInput = document.getElementById('currentPriceInput');
 
         const symbol = symbolInput.value.trim().toUpperCase();
         const newAmount = parseNum(amountInput.value);
         let newAvgCost = parseNum(avgCostInput.value);
+        let currentPrice = parseNum(currentPriceInput.value);
 
         if (!symbol || newAmount <= 0 || newAvgCost <= 0) {
             alert('Lütfen Hisse Kodu, Adet ve Ort. Maliyet alanlarını eksiksiz doldurun.');
             return;
         }
 
-        const statusText = document.getElementById('statusText');
-        statusText.innerText = `${symbol} için güncel fiyat aranıyor...`;
-
-        // Arka planda canlı fiyatı çekmeye çalış, çekemezse şimdilik maliyetini ata
-        let livePrice = await fetchBistPrice(symbol);
-        if (!livePrice || livePrice <= 0) {
-            livePrice = newAvgCost;
+        // Eğer güncel fiyat boş bırakıldıysa varsayılan olarak ortalama maliyeti ata
+        if (currentPrice <= 0) {
+            currentPrice = newAvgCost;
         }
-
-        statusText.innerText = "Portföy Aktif";
 
         const existingIndex = assets.findIndex(a => a.symbol === symbol);
 
@@ -380,19 +340,20 @@
             
             existing.amount = totalQty;
             existing.avgCost = totalCostSum / totalQty;
-            existing.currentPrice = livePrice;
+            existing.currentPrice = currentPrice;
         } else {
             assets.push({ 
                 symbol: symbol, 
                 amount: newAmount, 
                 avgCost: newAvgCost, 
-                currentPrice: livePrice 
+                currentPrice: currentPrice 
             });
         }
 
         symbolInput.value = '';
         amountInput.value = '';
         avgCostInput.value = '';
+        currentPriceInput.value = '';
 
         saveAndRender();
     }
@@ -431,7 +392,9 @@
                 <td><strong style="color: var(--accent-primary);">${item.symbol}</strong></td>
                 <td>${item.amount.toLocaleString('tr-TR')}</td>
                 <td>₺${item.avgCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td>₺${item.currentPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td>
+                    <input type="text" class="price-input" value="${item.currentPrice}" onchange="updateInlinePrice(${index}, this.value)">
+                </td>
                 <td>₺${itemVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td class="${isPos ? 'positive' : 'negative'}">₺${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td><span class="badge ${isPos ? 'badge-positive' : 'badge-negative'}">%${ratio.toFixed(2)}</span></td>
