@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v12 (BİST 15 Dk. Gecikmeli)</title>
+    <title>Portföyüm v14 (Garantili Gecikmeli Veri)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -201,7 +201,7 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v12</h1>
+        <h1>Portföyüm v14 🔥</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
             <span id="statusText">BİST 15 Dk. Gecikmeli Veri Servisi Aktif</span>
@@ -244,7 +244,7 @@
     <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
         <div class="section-header-flex" style="padding: 0 20px;">
             <div class="section-title">Hisse Portföyü</div>
-            <button class="btn-refresh" id="refreshBtn" onclick="fetchAllDelayedPrices()">⚡ Gecikmeli Fiyatları Güncelle</button>
+            <button class="btn-refresh" id="refreshBtn" onclick="fetchAllPricesByProxy()">⚡ Fiyatları Güncelle</button>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -253,7 +253,7 @@
                         <th>Hisse</th>
                         <th>Adet</th>
                         <th>Ort. Maliyet</th>
-                        <th>15 Dk. Gecikmeli Fiyat</th>
+                        <th>Gecikmeli Son Fiyat</th>
                         <th>Toplam Değer</th>
                         <th>Kar / Zarar</th>
                         <th>Oran (%)</th>
@@ -282,7 +282,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v12";
+    document.title = "Portföyüm v14";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
@@ -297,87 +297,75 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // JSONP YÖNTEMİ İLE CORS ENGELİSİZ BİST 15 DK GECİKMELİ VERİ ÇEKİMİ
-    function fetchSingleDelayedPrice(symbol) {
-        return new Promise((resolve) => {
-            const cleanSymbol = symbol.trim().toUpperCase();
-            const callbackName = 'bist_cb_' + cleanSymbol + '_' + Math.random().toString(36).substring(7);
+    // TEK BİR HİSSE İÇİN KESİNTİSİZ PROXY ÜZERİNDEN FİYAT ÇEKME MOTORU
+    async function fetchSinglePriceProxy(symbol) {
+        const cleanSymbol = symbol.trim().toUpperCase();
+        
+        // Mynet Finans üzerinden güvenli tünel sorgusu
+        const targetUrl = `https://bursa.finans.mynet.com/hisse-${cleanSymbol.toLowerCase()}/`;
+        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+
+        try {
+            const response = await fetch(proxyUrl);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (!data || !data.contents) return null;
+
+            // HTML içinden fiyat bilgisini yakalama
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(data.contents, 'text/html');
             
-            // Timeout kontrolü (3 saniye yanıt gelmezse pas geç)
-            const timer = setTimeout(() => {
-                delete window[callbackName];
-                const scriptEl = document.getElementById(callbackName);
-                if (scriptEl) scriptEl.remove();
-                resolve(null);
-            }, 3500);
+            // Fiyatın yer aldığı div/span element arayışı
+            const priceSpan = doc.querySelector('.dynamic-price-hisse') || doc.querySelector('[id*="last_price"]');
+            
+            if (priceSpan) {
+                let rawText = priceSpan.innerText.trim().replace('.', '').replace(',', '.');
+                let priceNum = parseFloat(rawText);
+                if (!isNaN(priceNum) && priceNum > 0) return priceNum;
+            }
 
-            window[callbackName] = function(data) {
-                clearTimeout(timer);
-                delete window[callbackName];
-                const scriptEl = document.getElementById(callbackName);
-                if (scriptEl) scriptEl.remove();
+            // Alternatif regex taraması
+            const match = data.contents.match(/<span class="[^\"]*dynamic-price[^\"]*">([\d\.,]+)<\/span>/i);
+            if (match && match[1]) {
+                let rawText = match[1].replace('.', '').replace(',', '.');
+                let priceNum = parseFloat(rawText);
+                if (!isNaN(priceNum) && priceNum > 0) return priceNum;
+            }
 
-                try {
-                    // Bigpara JSONP çıktısı çözümleme
-                    if (data && data[0] && data[0].kapanis) {
-                        const price = parseFloat(data[0].kapanis.toString().replace(',', '.'));
-                        if (price > 0) resolve(price);
-                        else resolve(null);
-                    } else if (data && data.data && data.data.kapanis) {
-                        const price = parseFloat(data.data.kapanis.toString().replace(',', '.'));
-                        if (price > 0) resolve(price);
-                        else resolve(null);
-                    } else {
-                        resolve(null);
-                    }
-                } catch (e) {
-                    resolve(null);
-                }
-            };
-
-            const script = document.createElement('script');
-            script.id = callbackName;
-            script.src = `https://bigpara.hurriyet.com.tr/api/v1/hisse/kapanis/${cleanSymbol}?callback=${callbackName}&_=${new Date().getTime()}`;
-            script.onerror = () => {
-                clearTimeout(timer);
-                delete window[callbackName];
-                script.remove();
-                resolve(null);
-            };
-            document.body.appendChild(script);
-        });
+            return null;
+        } catch (e) {
+            return null;
+        }
     }
 
-    async function fetchAllDelayedPrices() {
+    async function fetchAllPricesByProxy() {
         if (assets.length === 0) return;
 
         const statusText = document.getElementById('statusText');
         const refreshBtn = document.getElementById('refreshBtn');
 
-        statusText.innerText = "15 Dk. Gecikmeli Fiyatlar Çekiliyor...";
+        statusText.innerText = "Gecikmeli fiyatlar tünel üzerinden çekiliyor...";
         refreshBtn.disabled = true;
-        refreshBtn.innerText = "⏳ Güncelleniyor...";
 
         let updatedCount = 0;
 
-        for (let item of assets) {
-            const livePrice = await fetchSingleDelayedPrice(item.symbol);
-            if (livePrice && livePrice > 0) {
-                item.currentPrice = livePrice;
+        for (let i = 0; i < assets.length; i++) {
+            statusText.innerText = `Fiyatlar Çekiliyor: ${assets[i].symbol} (${i+1}/${assets.length})`;
+            const price = await fetchSinglePriceProxy(assets[i].symbol);
+            if (price && price > 0) {
+                assets[i].currentPrice = price;
                 updatedCount++;
+                saveAndRender();
             }
         }
-
-        saveAndRender();
 
         if (updatedCount > 0) {
             statusText.innerText = `Son Güncelleme: ${new Date().toLocaleTimeString('tr-TR')} (${updatedCount}/${assets.length} Hisse)`;
         } else {
-            statusText.innerText = "Sunucu yanıt vermedi (Borsa kapalı veya sembol geçersiz)";
+            statusText.innerText = "Veri çekilemedi, lütfen tekrar deneyin.";
         }
 
         refreshBtn.disabled = false;
-        refreshBtn.innerText = "⚡ Gecikmeli Fiyatları Güncelle";
     }
 
     function addAsset() {
@@ -424,7 +412,7 @@
         currentPriceInput.value = '';
 
         saveAndRender();
-        fetchAllDelayedPrices();
+        fetchAllPricesByProxy();
     }
 
     function deleteAsset(index) {
@@ -508,7 +496,7 @@
     }
 
     render();
-    fetchAllDelayedPrices();
+    fetchAllPricesByProxy();
 </script>
 
 </body>
