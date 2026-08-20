@@ -3,495 +3,186 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v45</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Borsa Portföy ve İşlem Paneli</title>
+    <!-- Bootstrap CSS for modern styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #0b0f19;
-            --card-bg: #151c2c;
-            --card-border: #232d42;
-            --text-main: #f3f4f6;
-            --text-muted: #9ca3af;
-            --accent-primary: #38bdf8;
-            --accent-hover: #0284c7;
-            --green-bg: rgba(34, 197, 94, 0.1);
-            --green-text: #4ade80;
-            --red-bg: rgba(239, 68, 68, 0.1);
-            --red-text: #f87171;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 24px 16px;
-            line-height: 1.5;
-        }
-
-        .container { max-width: 1200px; margin: 0 auto; }
-
-        header {
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        header h1 { font-size: 1.5rem; font-weight: 700; color: var(--accent-primary); }
-
-        .live-status {
-            font-size: 0.85rem;
-            color: var(--green-text);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: var(--green-bg);
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1px solid rgba(52, 211, 153, 0.2);
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--green-text);
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 8px var(--green-text);
-        }
-
-        .grid-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .card-title {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-bottom: 6px;
-        }
-
-        .card-value { font-size: 1.6rem; font-weight: 700; }
-
-        .section-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-
-        .section-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .section-title { font-size: 1.1rem; font-weight: 600; }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 140px;
-            gap: 12px;
-        }
-
-        @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; }
-        }
-
-        input {
-            background-color: var(--bg-color);
-            border: 1px solid var(--card-border);
-            color: var(--text-main);
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            outline: none;
-            width: 100%;
-        }
-
-        input:focus { border-color: var(--accent-primary); }
-
-        button.btn-primary {
-            background-color: var(--accent-primary);
-            color: #0b0f19;
-            font-weight: 700;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95rem;
-        }
-
-        button.btn-primary:hover { background-color: var(--accent-hover); color: #fff; }
-
-        .btn-sync {
-            background-color: #22c55e;
-            color: #0b0f19;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-sync:hover { background-color: #16a34a; color: #fff; }
-
-        .table-container {
-            overflow-x: auto;
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            background-color: var(--card-bg);
-        }
-
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
-        th { background-color: #111827; color: var(--text-muted); padding: 14px 16px; border-bottom: 1px solid var(--card-border); font-size: 0.75rem; text-transform: uppercase; }
-        td { padding: 14px 16px; border-bottom: 1px solid var(--card-border); }
-
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
-        .badge-positive { background-color: var(--green-bg); color: var(--green-text); }
-        .badge-negative { background-color: var(--red-bg); color: var(--red-text); }
-        .positive { color: var(--green-text); }
-        .negative { color: var(--red-text); }
-
-        .btn-action {
-            background-color: transparent;
-            border: 1px solid var(--card-border);
-            padding: 4px 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            color: var(--text-main);
-        }
-        .btn-delete { color: var(--red-text); }
-        .btn-delete:hover { background-color: var(--red-bg); }
-
-        .price-input {
-            width: 110px;
-            padding: 8px 10px;
-            border-radius: 6px;
-            font-size: 1rem;
-            text-align: right;
-            border: 1px solid var(--card-border);
-            background-color: var(--bg-color);
-            color: var(--accent-primary);
-            font-weight: 700;
-        }
+        body { background-color: #f8f9fa; }
+        .hidden-engine { display: none; } /* Gizli veri motoru alanı */
+        .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>Portföyüm v45 🚀</h1>
-        <div class="live-status">
-            <span class="pulse-dot"></span> 
-            <span id="statusText">Otomatik Senkronizasyon Hazır</span>
-        </div>
-    </header>
+    <div class="container py-4">
+        <header class="pb-3 mb-4 border-bottom d-flex justify-content-between align-items-center">
+            <h1 class="h3 fw-bold text-primary">📊 Akıllı Portföy Yönetimi</h1>
+            <button class="btn btn-outline-secondary btn-sm" onclick="toggleEngine()">⚙️ Gizli Veri Motorunu Göster/Gizle</button>
+        </header>
 
-    <!-- ÖZET KARTLARI -->
-    <div class="grid-summary">
-        <div class="card">
-            <div class="card-title">Portföy Değeri</div>
-            <div class="card-value" id="totalValue">₺0.00</div>
-        </div>
-        <div class="card">
-            <div class="card-title">Toplam Maliyet</div>
-            <div class="card-value" id="totalCost">₺0.00</div>
-        </div>
-        <div class="card">
-            <div class="card-title">Toplam Kar / Zarar</div>
-            <div class="card-value" id="totalProfit">₺0.00</div>
-        </div>
-        <div class="card">
-            <div class="card-title">Kar Oranı</div>
-            <div class="card-value" id="totalProfitRatio">%0.00</div>
-        </div>
-    </div>
-
-    <!-- GOOGLE SHEETS API AYARI (SADECE 1 KEZ TANIMLANIR) -->
-    <div class="section-card">
-        <div class="section-title">Otomatik Fiyat Köprüsü Ayarı</div>
-        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">
-            Google E-Tablolar bağlantı adresini buraya 1 kez girip kaydedin. Sonrasında her açtığınızda tek tuşla tüm borsa fiyatlarınız otomatik çekilsin.
-        </p>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <input type="text" id="sheetApiUrl" placeholder="Google Apps Script Web App URL adresinizi buraya yapıştırın..." style="flex: 1;">
-            <button type="button" class="btn-primary" onclick="saveSheetUrl()">Kaydet</button>
-        </div>
-    </div>
-
-    <!-- YENİ HİSSE EKLEME -->
-    <div class="section-card">
-        <div class="section-title">Yeni Hisse Ekle</div>
-        <div class="form-grid">
-            <input type="text" id="symbol" placeholder="Hisse (Örn: SASA)" style="text-transform:uppercase">
-            <input type="text" id="amount" placeholder="Adet (Örn: 1000)">
-            <input type="text" id="avgCost" placeholder="Ort. Maliyet (₺)">
-            <button type="button" class="btn-primary" onclick="addAsset()">Hisse Ekle</button>
-        </div>
-    </div>
-
-    <!-- PORTFÖY TABLOSU -->
-    <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
-        <div class="section-header-flex" style="padding: 0 20px;">
-            <div class="section-title" style="margin: 0;">Hisse Portföyü</div>
-            <button class="btn-sync" onclick="fetchLivePricesFromCloud()">⚡ Fiyatları Otomatik Çek</button>
-        </div>
-        <div class="table-container" style="border: none; border-radius: 0;">
-            <table>
+        <!-- ========================================== -->
+        <!-- 1. GİZLİ VERİ MOTORU (Excel Mantığı Arka Plan) -->
+        <!-- ========================================== -->
+        <div id="engineSection" class="card p-3 mb-4 hidden-engine bg-dark text-white">
+            <h5 class="text-warning">🔒 Gizli Veri Motoru (Canlı Fiyat Tablosu)</h5>
+            <p class="small text-muted">Bu kısım arkada Excel gibi çalışır ve ön yüzü besler.</p>
+            <table class="table table-dark table-striped table-sm" id="gizliTablo">
                 <thead>
                     <tr>
-                        <th>Hisse</th>
-                        <th>Adet</th>
-                        <th>Ort. Maliyet</th>
-                        <th>Güncel Fiyat (₺)</th>
-                        <th>Toplam Değer</th>
-                        <th>Kar / Zarar</th>
-                        <th>Oran (%)</th>
-                        <th>İşlem</th>
+                        <th>Hisse Kodu</th>
+                        <th>Canlı Fiyat (TL)</th>
+                        <th>Son Güncelleme</th>
                     </tr>
                 </thead>
-                <tbody id="assetList">
+                <tbody>
+                    <!-- Dinamik olarak doldurulacak -->
                 </tbody>
             </table>
         </div>
+
+        <!-- ========================================== -->
+        <!-- 2. ÖN YÜZ / PROGRAM KISMI (İşlem Paneli)   -->
+        <!-- ========================================== -->
+        <div class="row">
+            <!-- İşlem Ekleme Formu -->
+            <div class="col-md-4 mb-4">
+                <div class="card p-4">
+                    <h5 class="mb-3">İşlem / Portföy Ekle</h5>
+                    <div class="mb-3">
+                        <label class="form-label">Hisse Kodu</label>
+                        <input type="text" id="hisseKodu" class="form-control" placeholder="Örn: SASA, EREGL">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Adet</label>
+                        <input type="number" id="hisseAdet" class="form-control" value="100">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Birim Maliyet (TL)</label>
+                        <input type="number" id="hisseMaliyet" class="form-control" step="0.01" value="10.00">
+                    </div>
+                    <button class="btn btn-primary w-100" onclick="portfoyeEkle()">Portföye Kaydet</button>
+                </div>
+            </div>
+
+            <!-- Portföy Özeti ve Listesi -->
+            <div class="col-md-8">
+                <div class="card p-4">
+                    <h5 class="mb-3">Portföy Durumunuz</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="portfoyTablosu">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Hisse</th>
+                                    <th>Adet</th>
+                                    <th>Maliyet</th>
+                                    <th>Güncel Fiyat</th>
+                                    <th>Toplam Değer</th>
+                                    <th>Kâr / Zarar</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Kullanıcı verileri buraya gelecek -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    document.title = "Portföyüm v45";
+    <script>
+        // Gizli veri motorunun simüle edilmiş fiyat havuzu (Google Finance mantığı)
+        // Gerçek projede burası canlı API'lerden beslenir.
+        let veriMotoru = {
+            "SASA": 42.50,
+            "EREGL": 51.20,
+            "THYAO": 298.00,
+            "GARAN": 95.40
+        };
 
-    let assets = JSON.parse(localStorage.getItem('bist_assets_v45')) || [];
-    let sheetUrl = localStorage.getItem('bist_sheet_url_v45') || '';
+        let portfoy = JSON.parse(localStorage.getItem('user_portfoy')) || [];
 
-    document.addEventListener("DOMContentLoaded", () => {
-        if (sheetUrl) {
-            document.getElementById('sheetApiUrl').value = sheetUrl;
-        }
-    });
-
-    function saveSheetUrl() {
-        sheetUrl = document.getElementById('sheetApiUrl').value.trim();
-        localStorage.setItem('bist_sheet_url_v45', sheetUrl);
-        alert('Bağlantı adresi kaydedildi!');
-    }
-
-    function saveAndRender() {
-        localStorage.setItem('bist_assets_v45', JSON.stringify(assets));
-        render();
-    }
-
-    function parseNum(val) {
-        if (!val) return 0;
-        let clean = val.toString().replace(/\./g, '').replace(',', '.');
-        let num = parseFloat(clean);
-        return isNaN(num) ? 0 : num;
-    }
-
-    function updateInlinePrice(index, newPriceVal) {
-        let price = parseNum(newPriceVal);
-        if (price >= 0) {
-            assets[index].currentPrice = price;
-            localStorage.setItem('bist_assets_v45', JSON.stringify(assets));
-            updateRowCalcs(index);
-            updateSummaryCards();
-        }
-    }
-
-    async function fetchLivePricesFromCloud() {
-        if (!sheetUrl) {
-            alert('Lütfen önce yukarıdaki alana Google Apps Script Web App URL adresinizi girip kaydedin.');
-            return;
+        function toggleEngine() {
+            let engine = document.getElementById('engineSection');
+            if (engine.style.display === "none" || engine.style.display === "") {
+                engine.style.display = "block";
+                gizliTabloyuGuncelle();
+            } else {
+                engine.style.display = "none";
+            }
         }
 
-        const statusText = document.getElementById('statusText');
-        statusText.innerText = "Fiyatlar güncelleniyor...";
-
-        try {
-            const response = await fetch(sheetUrl);
-            const data = await response.json(); 
-
-            let updatedCount = 0;
-            assets.forEach(asset => {
-                let cleanSymbol = asset.symbol.toUpperCase().replace('.IS', '').trim();
-                if (data[cleanSymbol] !== undefined) {
-                    let p = parseNum(data[cleanSymbol]);
-                    if (p > 0) {
-                        asset.currentPrice = p;
-                        updatedCount++;
-                    }
-                }
-            });
-
-            saveAndRender();
-            statusText.innerText = `Güncellendi (${updatedCount} hisse): ${new Date().toLocaleTimeString('tr-TR')}`;
-            setTimeout(() => { statusText.innerText = "Otomatik Senkronizasyon Hazır"; }, 4000);
-
-        } catch (e) {
-            statusText.innerText = "Bağlantı Hatası!";
-            alert('Fiyatlar çekilemedi. Web App URL adresini ve izinlerini kontrol edin.');
-        }
-    }
-
-    function updateRowCalcs(index) {
-        const item = assets[index];
-        const rows = document.getElementById('assetList').rows;
-        if (!rows[index]) return;
-
-        const itemCost = item.amount * item.avgCost;
-        const itemVal = item.amount * item.currentPrice;
-        const profit = itemVal - itemCost;
-        const ratio = itemCost > 0 ? (profit / itemCost) * 100 : 0;
-        const isPos = profit >= 0;
-
-        rows[index].cells[4].innerText = `₺${itemVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        
-        const profitCell = rows[index].cells[5];
-        profitCell.innerText = `₺${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        profitCell.className = isPos ? 'positive' : 'negative';
-
-        const ratioCell = rows[index].cells[6];
-        ratioCell.innerHTML = `<span class="badge ${isPos ? 'badge-positive' : 'badge-negative'}">%${ratio.toFixed(2)}</span>`;
-    }
-
-    function updateSummaryCards() {
-        let totalVal = 0;
-        let totalCst = 0;
-
-        assets.forEach(item => {
-            totalVal += item.amount * item.currentPrice;
-            totalCst += item.amount * item.avgCost;
-        });
-
-        const totalProfit = totalVal - totalCst;
-        const totalRatio = totalCst > 0 ? (totalProfit / totalCst) * 100 : 0;
-
-        document.getElementById('totalValue').innerText = `₺${totalVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        document.getElementById('totalCost').innerText = `₺${totalCst.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        
-        const profitEl = document.getElementById('totalProfit');
-        profitEl.innerText = `₺${totalProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        profitEl.className = `card-value ${totalProfit >= 0 ? 'positive' : 'negative'}`;
-
-        const ratioEl = document.getElementById('totalProfitRatio');
-        if (ratioEl) {
-            ratioEl.innerText = `%${totalRatio.toFixed(2)}`;
-            ratioEl.className = `card-value ${totalRatio >= 0 ? 'positive' : 'negative'}`;
-        }
-    }
-
-    async function addAsset() {
-        const symbolInput = document.getElementById('symbol');
-        const amountInput = document.getElementById('amount');
-        const avgCostInput = document.getElementById('avgCost');
-
-        const symbol = symbolInput.value.trim().toUpperCase();
-        const newAmount = parseNum(amountInput.value);
-        let newAvgCost = parseNum(avgCostInput.value);
-
-        if (!symbol || newAmount <= 0 || newAvgCost <= 0) {
-            alert('Lütfen Hisse Kodu, Adet ve Ort. Maliyet alanlarını eksiksiz doldurun.');
-            return;
+        function gizliTabloyuGuncelle() {
+            let tbody = document.querySelector("#gizliTablo tbody");
+            tbody.innerHTML = "";
+            for (let [hisse, fiyat] of Object.entries(veriMotoru)) {
+                tbody.innerHTML += `<tr><td><b>${hisse}</b></td><td>${fiyat.toFixed(2)} TL</td><td>Az önce</td></tr>`;
+            }
         }
 
-        const existingIndex = assets.findIndex(a => a.symbol === symbol);
+        function portfoyeEkle() {
+            let kod = document.getElementById('hisseKodu').value.toUpperCase().trim();
+            let adet = parseFloat(document.getElementById('hisseAdet').value);
+            let maliyet = parseFloat(document.getElementById('hisseMaliyet').value);
 
-        if (existingIndex > -1) {
-            let existing = assets[existingIndex];
-            let totalQty = existing.amount + newAmount;
-            let totalCostSum = (existing.amount * existing.avgCost) + (newAmount * newAvgCost);
-            
-            existing.amount = totalQty;
-            existing.avgCost = totalCostSum / totalQty;
-            existing.currentPrice = existing.currentPrice > 0 ? existing.currentPrice : newAvgCost;
-        } else {
-            assets.push({ 
-                symbol: symbol, 
-                amount: newAmount, 
-                avgCost: newAvgCost, 
-                currentPrice: newAvgCost 
+            if (!kod || isNaN(adet) || isNaN(maliyet)) {
+                alert("Lütfen tüm alanları eksiksiz doldurun!");
+                return;
+            }
+
+            // Eğer veri motorunda bu hisse yoksa varsayılan bir fiyat atayalım
+            if (!veriMotoru[kod]) {
+                veriMotoru[kod] = maliyet; // Varsayılan olarak maliyet fiyatı alalım
+            }
+
+            portfoy.push({ kod, adet, maliyet });
+            localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
+            portfoyuCiz();
+            gizliTabloyuGuncelle();
+        }
+
+        function portfoyuCiz() {
+            let tbody = document.querySelector("#portfoyTablosu tbody");
+            tbody.innerHTML = "";
+
+            if (portfoy.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Henüz portföyünüze eklenmiş bir hisse yok.</td></tr>`;
+                return;
+            }
+
+            portfoy.forEach((item, index) => {
+                let guncelFiyat = veriMotoru[item.kod] || item.maliyet;
+                let toplamDeger = item.adet * guncelFiyat;
+                let toplamMaliyet = item.adet * item.maliyet;
+                let karZarar = toplamDeger - toplamMaliyet;
+                let renkClass = karZarar >= 0 ? "text-success" : "text-danger";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>${item.kod}</b></td>
+                        <td>${item.adet}</td>
+                        <td>${item.maliyet.toFixed(2)} TL</td>
+                        <td>${guncelFiyat.toFixed(2)} TL</td>
+                        <td>${toplamDeger.toFixed(2)} TL</td>
+                        <td class="${renkClass} fw-bold">${karZarar.toFixed(2)} TL</td>
+                        <td><button class="btn btn-sm btn-outline-danger" onclick="sil(${index})">Sil</button></td>
+                    </tr>
+                `;
             });
         }
 
-        symbolInput.value = '';
-        amountInput.value = '';
-        avgCostInput.value = '';
-
-        saveAndRender();
-    }
-
-    function deleteAsset(index) {
-        if (confirm(`${assets[index].symbol} hissesini silmek istediğinize emin misiniz?`)) {
-            assets.splice(index, 1);
-            saveAndRender();
-        }
-    }
-
-    function render() {
-        const list = document.getElementById('assetList');
-        list.innerHTML = '';
-
-        if (assets.length === 0) {
-            list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Henüz hisse eklenmedi.</td></tr>`;
-            updateSummaryCards();
-            return;
+        function sil(index) {
+            portfoy.splice(index, 1);
+            localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
+            portfoyuCiz();
         }
 
-        assets.forEach((item, index) => {
-            const itemCost = item.amount * item.avgCost;
-            const itemVal = item.amount * item.currentPrice;
-            const profit = itemVal - itemCost;
-            const ratio = itemCost > 0 ? (profit / itemCost) * 100 : 0;
-            const isPos = profit >= 0;
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><strong style="color: var(--accent-primary);">${item.symbol}</strong></td>
-                <td>${item.amount.toLocaleString('tr-TR')}</td>
-                <td>₺${item.avgCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td>
-                    <input type="number" step="any" inputmode="decimal" class="price-input" value="${item.currentPrice}" oninput="updateInlinePrice(${index}, this.value)">
-                </td>
-                <td>₺${itemVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td class="${isPos ? 'positive' : 'negative'}">₺${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td><span class="badge ${isPos ? 'badge-positive' : 'badge-negative'}">%${ratio.toFixed(2)}</span></td>
-                <td>
-                    <button class="btn-action btn-delete" onclick="deleteAsset(${index})">🗑️ Sil</button>
-                </td>
-            `;
-            list.appendChild(row);
-        });
-
-        updateSummaryCards();
-    }
-
-    render();
-</script>
-
+        // Sayfa açıldığında portföyü yükle
+        window.onload = function() {
+            portfoyuCiz();
+            gizliTabloyuGuncelle();
+        };
+    </script>
 </body>
 </html>
