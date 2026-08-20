@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v34</title>
+    <title>Portföyüm v36</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -145,14 +145,13 @@
 
         button.btn-primary:hover { background-color: var(--accent-hover); color: #fff; }
 
-        /* DEVASA GÖZE ÇARPAN GÜNCELLEME BUTONU */
         .btn-refresh-mega {
             background-color: var(--accent-primary);
             color: #0b0f19;
             border: none;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -162,11 +161,7 @@
             transition: all 0.2s;
         }
 
-        .btn-refresh-mega:hover {
-            background-color: #0284c7;
-            color: #fff;
-            transform: translateY(-1px);
-        }
+        .btn-refresh-mega:hover { background-color: #0284c7; color: #fff; }
 
         .table-container {
             overflow-x: auto;
@@ -197,20 +192,16 @@
         .btn-delete { color: var(--red-text); }
         .btn-delete:hover { background-color: var(--red-bg); }
 
-        .calc-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-        }
-
-        .calc-result-box {
-            margin-top: 16px;
-            padding: 12px 16px;
-            background-color: var(--bg-color);
-            border-radius: 8px;
+        .price-input {
+            width: 100px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-align: right;
             border: 1px solid var(--card-border);
-            font-weight: 600;
+            background-color: var(--bg-color);
             color: var(--accent-primary);
+            font-weight: 600;
         }
     </style>
 </head>
@@ -218,7 +209,7 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v34 🚀</h1>
+        <h1>Portföyüm v36 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
             <span id="statusText">Sistem Hazır</span>
@@ -245,7 +236,7 @@
         </div>
     </div>
 
-    <!-- YENİ HİSSE EKLEME FORMU -->
+    <!-- YENİ HİSSE EKLEME -->
     <div class="section-card">
         <div class="section-title">Yeni Hisse Ekle</div>
         <div class="form-grid">
@@ -256,12 +247,11 @@
         </div>
     </div>
 
-    <!-- PORTFÖY TABLOSU & DEVASA GÜNCELLEME BUTONU -->
+    <!-- PORTFÖY TABLOSU -->
     <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
         <div class="section-header-flex" style="padding: 0 20px;">
             <div class="section-title" style="margin: 0;">Hisse Portföyü</div>
-            <!-- BURAYA KOYDUM, KAÇMASIN İMKANI YOK :) -->
-            <button class="btn-refresh-mega" onclick="fetchAllPrices()">🔄 TÜM FİYATLARI GÜNCELLE</button>
+            <button class="btn-refresh-mega" onclick="fetchAllLivePrices()">🔄 Piyasadan Canlı Güncelle</button>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -282,29 +272,15 @@
             </table>
         </div>
     </div>
-
-    <!-- MALİYET HESAPLAYICI -->
-    <div class="section-card">
-        <div class="section-title">Ağırlıklı Ortalama Maliyet Hesaplayıcı</div>
-        <div class="calc-grid">
-            <input type="text" id="calcOldQty" placeholder="Mevcut Adet" oninput="calculateNewCost()">
-            <input type="text" id="calcOldCost" placeholder="Mevcut Maliyet (₺)" oninput="calculateNewCost()">
-            <input type="text" id="calcNewQty" placeholder="Yeni Alınan Adet" oninput="calculateNewCost()">
-            <input type="text" id="calcNewPrice" placeholder="Yeni Alış Fiyatı (₺)" oninput="calculateNewCost()">
-        </div>
-        <div class="calc-result-box" id="calcResult">
-            Yeni Ortalama Maliyet: ₺0.00
-        </div>
-    </div>
 </div>
 
 <script>
-    document.title = "Portföyüm v34";
+    document.title = "Portföyüm v36";
 
-    let assets = JSON.parse(localStorage.getItem('bist_assets_v34')) || [];
+    let assets = JSON.parse(localStorage.getItem('bist_assets_v36')) || [];
 
     function saveAndRender() {
-        localStorage.setItem('bist_assets_v34', JSON.stringify(assets));
+        localStorage.setItem('bist_assets_v36', JSON.stringify(assets));
         render();
     }
 
@@ -315,9 +291,19 @@
         return isNaN(num) ? 0 : num;
     }
 
-    async function fetchBistPrice(symbol) {
+    function updateInlinePrice(index, newPriceVal) {
+        let price = parseNum(newPriceVal);
+        if (price >= 0) {
+            assets[index].currentPrice = price;
+            saveAndRender();
+        }
+    }
+
+    // Doğrudan BIST verilerini çeken güncellenmiş güvenli API fonksiyonu
+    async function fetchBistPriceFromApi(symbol) {
         try {
             let cleanSymbol = symbol.toUpperCase().replace('.IS', '').trim();
+            // CORS engeline takılmayan alternatif finansal veri köprüsü
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS?interval=1d`;
             const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
             
@@ -330,29 +316,31 @@
                 if (price) return parseFloat(price);
             }
         } catch (e) {
-            console.log(`${symbol} fiyatı alınamadı.`);
+            console.log(`${symbol} için canlı fiyat çekilemedi.`);
         }
         return null;
     }
 
-    async function fetchAllPrices() {
+    async function fetchAllLivePrices() {
         if (assets.length === 0) {
             alert('Önce listeye hisse eklemelisiniz.');
             return;
         }
 
         const statusText = document.getElementById('statusText');
-        statusText.innerText = "Tüm fiyatlar güncelleniyor...";
+        statusText.innerText = "Canlı fiyatlar çekiliyor...";
 
+        let successCount = 0;
         for (let i = 0; i < assets.length; i++) {
-            let livePrice = await fetchBistPrice(assets[i].symbol);
+            let livePrice = await fetchBistPriceFromApi(assets[i].symbol);
             if (livePrice && livePrice > 0) {
                 assets[i].currentPrice = livePrice;
+                successCount++;
             }
         }
 
         saveAndRender();
-        statusText.innerText = `Güncellendi: ${new Date().toLocaleTimeString('tr-TR')}`;
+        statusText.innerText = `Güncellendi (${successCount}/${assets.length}): ${new Date().toLocaleTimeString('tr-TR')}`;
         setTimeout(() => { statusText.innerText = "Sistem Hazır"; }, 4000);
     }
 
@@ -373,9 +361,9 @@
         const statusText = document.getElementById('statusText');
         statusText.innerText = `${symbol} için canlı fiyat alınıyor...`;
 
-        let livePrice = await fetchBistPrice(symbol);
+        let livePrice = await fetchBistPriceFromApi(symbol);
         if (!livePrice || livePrice <= 0) {
-            livePrice = newAvgCost;
+            livePrice = newAvgCost; // Çekemezse maliyeti baz alır, kutudan sonradan değiştirebilirsin
         }
 
         statusText.innerText = "Sistem Hazır";
@@ -440,7 +428,9 @@
                 <td><strong style="color: var(--accent-primary);">${item.symbol}</strong></td>
                 <td>${item.amount.toLocaleString('tr-TR')}</td>
                 <td>₺${item.avgCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td>₺${item.currentPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td>
+                    <input type="text" class="price-input" value="${item.currentPrice}" onchange="updateInlinePrice(${index}, this.value)">
+                </td>
                 <td>₺${itemVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td class="${isPos ? 'positive' : 'negative'}">₺${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td><span class="badge ${isPos ? 'badge-positive' : 'badge-negative'}">%${ratio.toFixed(2)}</span></td>
@@ -466,24 +456,6 @@
             ratioEl.innerText = `%${totalRatio.toFixed(2)}`;
             ratioEl.className = `card-value ${totalRatio >= 0 ? 'positive' : 'negative'}`;
         }
-    }
-
-    function calculateNewCost() {
-        const oldQty = parseNum(document.getElementById('calcOldQty').value);
-        const oldCost = parseNum(document.getElementById('calcOldCost').value);
-        const newQty = parseNum(document.getElementById('calcNewQty').value);
-        const newPrice = parseNum(document.getElementById('calcNewPrice').value);
-
-        const totalQty = oldQty + newQty;
-        if (totalQty === 0) {
-            document.getElementById('calcResult').innerText = 'Yeni Ortalama Maliyet: ₺0.00';
-            return;
-        }
-
-        const totalCostSum = (oldQty * oldCost) + (newQty * newPrice);
-        const finalAvgCost = totalCostSum / totalQty;
-
-        document.getElementById('calcResult').innerText = `Yeni Ortalama Maliyet: ₺${finalAvgCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (Toplam Adet: ${totalQty.toLocaleString('tr-TR')})`;
     }
 
     render();
