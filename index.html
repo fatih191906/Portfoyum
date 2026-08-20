@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BİST Portföy Takip (Otomatik Canlı Fiyat)</title>
+    <title>BİST Portföy Takip</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -102,7 +102,7 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 130px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) 120px;
             gap: 12px;
         }
 
@@ -181,7 +181,7 @@
     <header>
         <h1>BİST Portföy Takip</h1>
         <div class="live-status">
-            <span class="pulse-dot"></span> Canlı Otomatik Güncelleme (30s)
+            <span class="pulse-dot"></span> Canlı Fiyat Takibi
         </div>
     </header>
 
@@ -212,7 +212,8 @@
             <input type="text" id="symbol" placeholder="Hisse Kodu (Örn: SASA)" style="text-transform:uppercase">
             <input type="number" id="amount" placeholder="Adet" step="any">
             <input type="number" id="avgCost" placeholder="Ort. Maliyet (₺)" step="any">
-            <button class="btn-primary" onclick="addAsset()">Hisse Ekle</button>
+            <input type="number" id="currentPriceInput" placeholder="Güncel Fiyat (İsteğe Bağlı)" step="any">
+            <button class="btn-primary" onclick="addAsset()">Ekle</button>
         </div>
     </div>
 
@@ -267,6 +268,7 @@
             const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS`;
             const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+            if(!response.ok) return null;
             const data = await response.json();
             const price = data.chart.result[0].meta.regularMarketPrice;
             return price || null;
@@ -275,43 +277,59 @@
         }
     }
 
-    async function addAsset() {
+    function addAsset() {
         const symbolInput = document.getElementById('symbol');
         const amountInput = document.getElementById('amount');
         const avgCostInput = document.getElementById('avgCost');
+        const currentPriceInput = document.getElementById('currentPriceInput');
 
         const symbol = symbolInput.value.trim().toUpperCase().replace('.IS', '');
         const amount = parseFloat(amountInput.value);
         const avgCost = parseFloat(avgCostInput.value);
+        let manualPrice = parseFloat(currentPriceInput.value);
 
+        // Sadece zorunlu alanlar kontrol ediliyor
         if (!symbol || isNaN(amount) || isNaN(avgCost)) {
-            alert('Lütfen Hisse Kodu, Adet ve Ortalama Maliyet alanlarını eksiksiz doldurun.');
+            alert('Lütfen Hisse Kodu, Adet ve Ortalama Maliyet alanlarını doldurun.');
             return;
         }
 
-        // Canlı fiyat çekiliyor
-        const fetchedPrice = await fetchPriceFromBist(symbol);
-        const currentPrice = fetchedPrice ? fetchedPrice : avgCost;
+        // Fiyat girilmediyse varsayılan olarak ortalama maliyet atanır (hata vermez)
+        const initialPrice = !isNaN(manualPrice) ? manualPrice : avgCost;
 
-        assets.push({ symbol, amount, avgCost, currentPrice });
+        assets.push({ 
+            symbol: symbol, 
+            amount: amount, 
+            avgCost: avgCost, 
+            currentPrice: initialPrice 
+        });
 
+        // Formu temizle
         symbolInput.value = '';
         amountInput.value = '';
         avgCostInput.value = '';
+        currentPriceInput.value = '';
 
         saveAndRender();
+
+        // Arka planda canlı fiyatı çekmeyi dene
+        fetchLivePrices();
     }
 
     async function fetchLivePrices() {
         if (assets.length === 0) return;
         
+        let hasUpdate = false;
         for (let item of assets) {
             const livePrice = await fetchPriceFromBist(item.symbol);
-            if (livePrice) {
+            if (livePrice && livePrice !== item.currentPrice) {
                 item.currentPrice = livePrice;
+                hasUpdate = true;
             }
         }
-        saveAndRender();
+        if (hasUpdate) {
+            saveAndRender();
+        }
     }
 
     function deleteAsset(index) {
@@ -390,7 +408,6 @@
 
     render();
     fetchLivePrices();
-
     setInterval(fetchLivePrices, 30000);
 </script>
 
