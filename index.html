@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v21</title>
+    <title>Portföyüm v22</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -214,10 +214,10 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v21 🚀</h1>
+        <h1>Portföyüm v22 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
-            <span id="statusText">Sistem Hazır</span>
+            <span id="statusText">Portföy Aktif</span>
         </div>
     </header>
 
@@ -258,9 +258,9 @@
         <div class="section-header-flex" style="padding: 0 20px;">
             <div>
                 <div class="section-title" style="margin: 0;">Hisse Portföyü</div>
-                <small style="color: var(--text-muted);">Canlı veriler otomatik çekilmektedir.</small>
+                <small style="color: var(--text-muted);">Güncel fiyatlar tabloda saklanır ve anlık hesaplanır.</small>
             </div>
-            <button class="btn-refresh" id="refreshBtn" onclick="fetchLivePrices()">🔄 Fiyatları Güncelle</button>
+            <button class="btn-refresh" id="refreshBtn" onclick="triggerRefresh()">🔄 Fiyatları Güncelle</button>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -298,12 +298,12 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v21";
+    document.title = "Portföyüm v22";
 
-    let assets = JSON.parse(localStorage.getItem('bist_assets_v21')) || [];
+    let assets = JSON.parse(localStorage.getItem('bist_assets_v22')) || [];
 
     function saveAndRender() {
-        localStorage.setItem('bist_assets_v21', JSON.stringify(assets));
+        localStorage.setItem('bist_assets_v22', JSON.stringify(assets));
         render();
     }
 
@@ -314,26 +314,13 @@
         return isNaN(num) ? 0 : num;
     }
 
-    async function fetchLivePrices() {
-        if (assets.length === 0) return;
-
+    function triggerRefresh() {
         const statusText = document.getElementById('statusText');
-        const refreshBtn = document.getElementById('refreshBtn');
-
-        statusText.innerText = "Fiyatlar güncelleniyor...";
-        refreshBtn.disabled = true;
-
-        try {
-            // Alternatif ve açık finansal veri kaynağı kullanılarak CORS engeli aşılır
-            const response = await fetch("https://api.orneklem.finance/bist/latest"); // Örnek endpoint yerine doğrudan çalışan public endpoint
-            // Eğer harici servis yanıt vermezse localStorage'daki mevcut fiyatlar korunur.
-            statusText.innerText = `Güncellendi: ${new Date().toLocaleTimeString('tr-TR')}`;
-        } catch (e) {
-            // Bağlantı kopsa bile kullanıcı asla manuel girmek zorunda kalmaz, son geçerli fiyatlar kalır.
-            statusText.innerText = "Çevrimdışı mod (Son fiyatlar kullanılıyor)";
-        }
-
-        refreshBtn.disabled = false;
+        statusText.innerText = `Güncellendi: ${new Date().toLocaleTimeString('tr-TR')}`;
+        setTimeout(() => {
+            statusText.innerText = "Portföy Aktif";
+        }, 2000);
+        render();
     }
 
     function updateInlinePrice(index, newPriceVal) {
@@ -360,8 +347,8 @@
             return;
         }
 
-        const initialPrice = manualPrice > 0 ? manualPrice : (newAvgCost > 0 ? newAvgCost : 0);
-        if (newAvgCost === 0 && initialPrice > 0) newAvgCost = initialPrice;
+        // Eğer anlık fiyat kutusuna bir şey yazılmadıysa, ortalama maliyeti baz al (veya daha önce eklediyse son fiyatı koru)
+        let initialPrice = manualPrice > 0 ? manualPrice : (newAvgCost > 0 ? newAvgCost : 0);
 
         const existingIndex = assets.findIndex(a => a.symbol === symbol);
 
@@ -372,13 +359,15 @@
             
             existing.amount = totalQty;
             existing.avgCost = totalCostSum / totalQty;
-            if (manualPrice > 0) existing.currentPrice = manualPrice;
+            if (manualPrice > 0) {
+                existing.currentPrice = manualPrice;
+            }
         } else {
             assets.push({ 
                 symbol: symbol, 
                 amount: newAmount, 
                 avgCost: newAvgCost, 
-                currentPrice: initialPrice > 0 ? initialPrice : newAvgCost
+                currentPrice: initialPrice
             });
         }
 
