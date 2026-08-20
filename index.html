@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v15 (Kesintisiz Yahoo BİST)</title>
+    <title>Portföyüm v16</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -180,6 +180,13 @@
         .btn-delete { color: var(--red-text); }
         .btn-delete:hover { background-color: var(--red-bg); }
 
+        .price-edit-input {
+            width: 90px;
+            padding: 4px 8px;
+            font-size: 0.85rem;
+            text-align: right;
+        }
+
         .calc-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -201,10 +208,10 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v15 🔥</h1>
+        <h1>Portföyüm v16 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
-            <span id="statusText">Yahoo BİST Veri Servisi Hazır</span>
+            <span id="statusText">Canlı BİST Servisi Aktif</span>
         </div>
     </header>
 
@@ -235,7 +242,7 @@
             <input type="text" id="symbol" placeholder="Hisse (Örn: SASA)" style="text-transform:uppercase">
             <input type="text" id="amount" placeholder="Adet (Örn: 1000)">
             <input type="text" id="avgCost" placeholder="Ort. Maliyet (₺)">
-            <input type="text" id="currentPriceInput" placeholder="Manuel Fiyat (İsteğe Bağlı)">
+            <input type="text" id="currentPriceInput" placeholder="Anlık Fiyat (₺)">
             <button type="button" class="btn-primary" onclick="addAsset()">Ekle</button>
         </div>
     </div>
@@ -244,7 +251,7 @@
     <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
         <div class="section-header-flex" style="padding: 0 20px;">
             <div class="section-title">Hisse Portföyü</div>
-            <button class="btn-refresh" id="refreshBtn" onclick="fetchAllMarketPrices()">⚡ Fiyatları Güncelle</button>
+            <button class="btn-refresh" id="refreshBtn" onclick="fetchAllMarketPrices()">⚡ Fiyatları İnternetten Çek</button>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -253,7 +260,7 @@
                         <th>Hisse</th>
                         <th>Adet</th>
                         <th>Ort. Maliyet</th>
-                        <th>Son Fiyat</th>
+                        <th>Güncel Fiyat (₺)</th>
                         <th>Toplam Değer</th>
                         <th>Kar / Zarar</th>
                         <th>Oran (%)</th>
@@ -282,7 +289,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v15";
+    document.title = "Portföyüm v16";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
@@ -297,37 +304,34 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // YEDEKLI PROXY ÜZERİNDEN YAHOO FINANCE BİST VERİSİ ÇEKME
+    // YEDEKLI BIST VERI CEKME MOTORU
     async function fetchSinglePrice(symbol) {
-        const cleanSymbol = symbol.trim().toUpperCase() + '.IS';
-        const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}?interval=1m&range=1d`;
+        const cleanSymbol = symbol.trim().toUpperCase();
         
-        const proxies = [
-            url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-            url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
-        ];
-
-        for (const getProxyUrl of proxies) {
-            try {
-                const response = await fetch(getProxyUrl(targetUrl));
-                if (!response.ok) continue;
-
-                let data = await response.json();
-                
-                // Allorigins yapısı
-                if (data.contents) {
-                    data = JSON.parse(data.contents);
-                }
-
-                if (data && data.chart && data.chart.result && data.chart.result[0]) {
-                    const meta = data.chart.result[0].meta;
-                    const price = meta.regularMarketPrice || meta.chartPreviousClose;
-                    if (price && price > 0) return price;
-                }
-            } catch (err) {
-                // Diğer proxy deneniyor
+        // 1. Yöntem: Direct Fast Proxy
+        try {
+            const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS?interval=1m&range=1d`;
+            const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+            if (res.ok) {
+                const data = await res.json();
+                const meta = data?.chart?.result?.[0]?.meta;
+                const price = meta?.regularMarketPrice || meta?.chartPreviousClose;
+                if (price && price > 0) return price;
             }
-        }
+        } catch (e) {}
+
+        // 2. Yöntem: Alternative Cors Proxy
+        try {
+            const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS?interval=1m&range=1d`;
+            const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`);
+            if (res.ok) {
+                const data = await res.json();
+                const meta = data?.chart?.result?.[0]?.meta;
+                const price = meta?.regularMarketPrice || meta?.chartPreviousClose;
+                if (price && price > 0) return price;
+            }
+        } catch (e) {}
+
         return null;
     }
 
@@ -355,10 +359,18 @@
         if (updatedCount > 0) {
             statusText.innerText = `Son Güncelleme: ${new Date().toLocaleTimeString('tr-TR')} (${updatedCount}/${assets.length} Hisse)`;
         } else {
-            statusText.innerText = "Veri çekilemedi, tekrar deneyin.";
+            statusText.innerText = "Otomatik veri çekilemedi. Fiyatları tablodan el ile de güncelleyebilirsiniz.";
         }
 
         refreshBtn.disabled = false;
+    }
+
+    function updateInlinePrice(index, newPriceVal) {
+        let price = parseNum(newPriceVal);
+        if (price > 0) {
+            assets[index].currentPrice = price;
+            saveAndRender();
+        }
     }
 
     function addAsset() {
@@ -442,7 +454,9 @@
                 <td><strong style="color: var(--accent-primary);">${item.symbol}</strong></td>
                 <td>${item.amount.toLocaleString('tr-TR')}</td>
                 <td>₺${item.avgCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td>₺${item.currentPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td>
+                    <input type="text" class="price-edit-input" value="${item.currentPrice}" onchange="updateInlinePrice(${index}, this.value)">
+                </td>
                 <td>₺${itemVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td class="${isPos ? 'positive' : 'negative'}">₺${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td><span class="badge ${isPos ? 'badge-positive' : 'badge-negative'}">%${ratio.toFixed(2)}</span></td>
