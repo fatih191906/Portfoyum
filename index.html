@@ -276,23 +276,28 @@
     }
 
     async function addAsset() {
-        const symbol = document.getElementById('symbol').value.trim().toUpperCase().replace('.IS', '');
-        const amount = parseFloat(document.getElementById('amount').value);
-        const avgCost = parseFloat(document.getElementById('avgCost').value);
+        const symbolInput = document.getElementById('symbol');
+        const amountInput = document.getElementById('amount');
+        const avgCostInput = document.getElementById('avgCost');
+
+        const symbol = symbolInput.value.trim().toUpperCase().replace('.IS', '');
+        const amount = parseFloat(amountInput.value);
+        const avgCost = parseFloat(avgCostInput.value);
 
         if (!symbol || isNaN(amount) || isNaN(avgCost)) {
-            alert('Lütfen Hisse Kodu, Adet ve Ortalama Maliyet alanlarını doldurun.');
+            alert('Lütfen Hisse Kodu, Adet ve Ortalama Maliyet alanlarını eksiksiz doldurun.');
             return;
         }
 
+        // Canlı fiyat çekiliyor
         const fetchedPrice = await fetchPriceFromBist(symbol);
         const currentPrice = fetchedPrice ? fetchedPrice : avgCost;
 
         assets.push({ symbol, amount, avgCost, currentPrice });
 
-        document.getElementById('symbol').value = '';
-        document.getElementById('amount').value = '';
-        document.getElementById('avgCost').value = '';
+        symbolInput.value = '';
+        amountInput.value = '';
+        avgCostInput.value = '';
 
         saveAndRender();
     }
@@ -386,7 +391,6 @@
     render();
     fetchLivePrices();
 
-    // 30 saniyede bir fiyatları arka planda otomatik güncelle
     setInterval(fetchLivePrices, 30000);
 </script>
 
