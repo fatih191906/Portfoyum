@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v17 (TradingView Canlı BİST)</title>
+    <title>Portföyüm v18</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -33,7 +33,7 @@
         .container { max-width: 1200px; margin: 0 auto; }
 
         header {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -167,6 +167,8 @@
             font-size: 0.85rem;
             text-align: right;
             border: 1px solid var(--card-border);
+            background-color: var(--bg-color);
+            color: var(--text-main);
         }
 
         .calc-grid {
@@ -189,6 +191,7 @@
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid var(--card-border);
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -196,37 +199,35 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v17 🚀</h1>
+        <h1>Portföyüm v18 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
-            <span>TradingView Canlı BİST Entegre Edildi</span>
+            <span>TradingView BİST Akışı Düzeltildi</span>
         </div>
     </header>
 
-    <!-- TRADINGVIEW CANLI BİST BANT WIDGETI -->
-    <div class="section-card" style="padding: 0; background: transparent; border: none;">
-        <div class="tradingview-widget-container">
-            <div class="tradingview-widget-container__widget"></div>
-            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-            {
-            "symbols": [
-                { "proName": "BIST:SASA", "title": "SASA" },
-                { "proName": "BIST:EREGL", "title": "EREGL" },
-                { "proName": "BIST:HEKTS", "title": "HEKTS" },
-                { "proName": "BIST:TERA", "title": "TERA" },
-                { "proName": "BIST:KOPOL", "title": "KOPOL" },
-                { "proName": "BIST:MANAS", "title": "MANAS" },
-                { "proName": "BIST:DAGI", "title": "DAGI" },
-                { "proName": "BIST:XU100", "title": "BIST 100" }
-            ],
-            "showSymbolLogo": true,
-            "colorTheme": "dark",
-            "isTransparent": true,
-            "displayMode": "adaptive",
-            "locale": "tr"
-            }
-            </script>
-        </div>
+    <!-- TRADINGVIEW DÜZELTİLMİŞ CANLI BİST BANT -->
+    <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+        {
+        "symbols": [
+            { "description": "SASA", "proName": "BIST:SASA" },
+            { "description": "EREGL", "proName": "BIST:EREGL" },
+            { "description": "HEKTS", "proName": "BIST:HEKTS" },
+            { "description": "TERA", "proName": "BIST:TERA" },
+            { "description": "ASELS", "proName": "BIST:ASELS" },
+            { "description": "KOPOL", "proName": "BIST:KOPOL" },
+            { "description": "MANAS", "proName": "BIST:MANAS" },
+            { "description": "BIST 100", "proName": "BIST:XU100" }
+        ],
+        "showSymbolLogo": false,
+        "colorTheme": "dark",
+        "isTransparent": true,
+        "displayMode": "adaptive",
+        "locale": "tr"
+        }
+        </script>
     </div>
 
     <!-- ÖZET KARTLARI -->
@@ -265,7 +266,7 @@
     <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
         <div style="padding: 0 20px 16px 20px;">
             <div class="section-title" style="margin: 0;">Hisse Portföyü</div>
-            <small style="color: var(--text-muted);">Güncel Fiyat kutucuğuna anlık fiyatı yazarak portföy değerinizi anında güncelleyebilirsiniz.</small>
+            <small style="color: var(--text-muted);">Güncel Fiyat kutucuğuna anlık borsa fiyatını girip tıklayarak portföy değerinizi canlı güncelleyin.</small>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -303,7 +304,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v17";
+    document.title = "Portföyüm v18";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
