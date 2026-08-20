@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v14 (Garantili Gecikmeli Veri)</title>
+    <title>Portföyüm v15 (Kesintisiz Yahoo BİST)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -201,10 +201,10 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v14 🔥</h1>
+        <h1>Portföyüm v15 🔥</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
-            <span id="statusText">BİST 15 Dk. Gecikmeli Veri Servisi Aktif</span>
+            <span id="statusText">Yahoo BİST Veri Servisi Hazır</span>
         </div>
     </header>
 
@@ -244,7 +244,7 @@
     <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
         <div class="section-header-flex" style="padding: 0 20px;">
             <div class="section-title">Hisse Portföyü</div>
-            <button class="btn-refresh" id="refreshBtn" onclick="fetchAllPricesByProxy()">⚡ Fiyatları Güncelle</button>
+            <button class="btn-refresh" id="refreshBtn" onclick="fetchAllMarketPrices()">⚡ Fiyatları Güncelle</button>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -253,7 +253,7 @@
                         <th>Hisse</th>
                         <th>Adet</th>
                         <th>Ort. Maliyet</th>
-                        <th>Gecikmeli Son Fiyat</th>
+                        <th>Son Fiyat</th>
                         <th>Toplam Değer</th>
                         <th>Kar / Zarar</th>
                         <th>Oran (%)</th>
@@ -282,7 +282,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v14";
+    document.title = "Portföyüm v15";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
@@ -297,61 +297,54 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // TEK BİR HİSSE İÇİN KESİNTİSİZ PROXY ÜZERİNDEN FİYAT ÇEKME MOTORU
-    async function fetchSinglePriceProxy(symbol) {
-        const cleanSymbol = symbol.trim().toUpperCase();
+    // YEDEKLI PROXY ÜZERİNDEN YAHOO FINANCE BİST VERİSİ ÇEKME
+    async function fetchSinglePrice(symbol) {
+        const cleanSymbol = symbol.trim().toUpperCase() + '.IS';
+        const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}?interval=1m&range=1d`;
         
-        // Mynet Finans üzerinden güvenli tünel sorgusu
-        const targetUrl = `https://bursa.finans.mynet.com/hisse-${cleanSymbol.toLowerCase()}/`;
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+        const proxies = [
+            url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+            url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`
+        ];
 
-        try {
-            const response = await fetch(proxyUrl);
-            if (!response.ok) return null;
-            const data = await response.json();
-            if (!data || !data.contents) return null;
+        for (const getProxyUrl of proxies) {
+            try {
+                const response = await fetch(getProxyUrl(targetUrl));
+                if (!response.ok) continue;
 
-            // HTML içinden fiyat bilgisini yakalama
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data.contents, 'text/html');
-            
-            // Fiyatın yer aldığı div/span element arayışı
-            const priceSpan = doc.querySelector('.dynamic-price-hisse') || doc.querySelector('[id*="last_price"]');
-            
-            if (priceSpan) {
-                let rawText = priceSpan.innerText.trim().replace('.', '').replace(',', '.');
-                let priceNum = parseFloat(rawText);
-                if (!isNaN(priceNum) && priceNum > 0) return priceNum;
+                let data = await response.json();
+                
+                // Allorigins yapısı
+                if (data.contents) {
+                    data = JSON.parse(data.contents);
+                }
+
+                if (data && data.chart && data.chart.result && data.chart.result[0]) {
+                    const meta = data.chart.result[0].meta;
+                    const price = meta.regularMarketPrice || meta.chartPreviousClose;
+                    if (price && price > 0) return price;
+                }
+            } catch (err) {
+                // Diğer proxy deneniyor
             }
-
-            // Alternatif regex taraması
-            const match = data.contents.match(/<span class="[^\"]*dynamic-price[^\"]*">([\d\.,]+)<\/span>/i);
-            if (match && match[1]) {
-                let rawText = match[1].replace('.', '').replace(',', '.');
-                let priceNum = parseFloat(rawText);
-                if (!isNaN(priceNum) && priceNum > 0) return priceNum;
-            }
-
-            return null;
-        } catch (e) {
-            return null;
         }
+        return null;
     }
 
-    async function fetchAllPricesByProxy() {
+    async function fetchAllMarketPrices() {
         if (assets.length === 0) return;
 
         const statusText = document.getElementById('statusText');
         const refreshBtn = document.getElementById('refreshBtn');
 
-        statusText.innerText = "Gecikmeli fiyatlar tünel üzerinden çekiliyor...";
+        statusText.innerText = "Fiyatlar güncelleniyor...";
         refreshBtn.disabled = true;
 
         let updatedCount = 0;
 
         for (let i = 0; i < assets.length; i++) {
-            statusText.innerText = `Fiyatlar Çekiliyor: ${assets[i].symbol} (${i+1}/${assets.length})`;
-            const price = await fetchSinglePriceProxy(assets[i].symbol);
+            statusText.innerText = `Çekiliyor: ${assets[i].symbol} (${i+1}/${assets.length})`;
+            const price = await fetchSinglePrice(assets[i].symbol);
             if (price && price > 0) {
                 assets[i].currentPrice = price;
                 updatedCount++;
@@ -362,7 +355,7 @@
         if (updatedCount > 0) {
             statusText.innerText = `Son Güncelleme: ${new Date().toLocaleTimeString('tr-TR')} (${updatedCount}/${assets.length} Hisse)`;
         } else {
-            statusText.innerText = "Veri çekilemedi, lütfen tekrar deneyin.";
+            statusText.innerText = "Veri çekilemedi, tekrar deneyin.";
         }
 
         refreshBtn.disabled = false;
@@ -412,7 +405,7 @@
         currentPriceInput.value = '';
 
         saveAndRender();
-        fetchAllPricesByProxy();
+        fetchAllMarketPrices();
     }
 
     function deleteAsset(index) {
@@ -496,7 +489,7 @@
     }
 
     render();
-    fetchAllPricesByProxy();
+    fetchAllMarketPrices();
 </script>
 
 </body>
