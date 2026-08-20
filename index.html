@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v29</title>
+    <title>Portföyüm v31</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -210,7 +210,7 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v29 🚀</h1>
+        <h1>Portföyüm v31 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
             <span id="statusText">Portföy Aktif</span>
@@ -290,12 +290,12 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v29";
+    document.title = "Portföyüm v31";
 
-    let assets = JSON.parse(localStorage.getItem('bist_assets_v29')) || [];
+    let assets = JSON.parse(localStorage.getItem('bist_assets_v31')) || [];
 
     function saveAndRender() {
-        localStorage.setItem('bist_assets_v29', JSON.stringify(assets));
+        localStorage.setItem('bist_assets_v31', JSON.stringify(assets));
         render();
     }
 
@@ -306,33 +306,30 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // BIST anlık fiyatını dış kaynaklardan çekme fonksiyonu
+    // Arka planda güvenilir bir API üzerinden BIST anlık fiyatını çeken fonksiyon
     async function fetchBistPrice(symbol) {
         try {
-            // Yahoo Finance API üzerinden güvenli veri çekme
-            const ticker = symbol.endsWith('.IS') ? symbol : symbol + '.IS';
-            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d`;
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            let cleanSymbol = symbol.toUpperCase().replace('.IS', '').trim();
+            // BIST verilerini CORS engeline takılmadan güvenle sağlayan genel finans uç noktası
+            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS?interval=1d`;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
             
             const response = await fetch(proxyUrl);
             const data = await response.json();
             
-            if (data && data.contents) {
-                const parsed = JSON.parse(data.contents);
-                const price = parsed.chart.result[0].meta.regularMarketPrice;
-                if (price) return price;
+            if (data && data.chart && data.chart.result && data.chart.result[0]) {
+                const meta = data.chart.result[0].meta;
+                const price = meta.regularMarketPrice || meta.chartPreviousClose;
+                if (price) return parseFloat(price);
             }
         } catch (e) {
-            console.log(`${symbol} için canlı fiyat alınamadı.`);
+            console.log(`${symbol} fiyatı alınamadı.`);
         }
         return null;
     }
 
     async function fetchAllPrices() {
-        if (assets.length === 0) {
-            alert("Portföyde güncellenecek hisse bulunmuyor.");
-            return;
-        }
+        if (assets.length === 0) return;
 
         const statusText = document.getElementById('statusText');
         statusText.innerText = "Fiyatlar güncelleniyor...";
@@ -346,9 +343,7 @@
 
         saveAndRender();
         statusText.innerText = `Güncellendi: ${new Date().toLocaleTimeString('tr-TR')}`;
-        setTimeout(() => {
-            statusText.innerText = "Portföy Aktif";
-        }, 3000);
+        setTimeout(() => { statusText.innerText = "Portföy Aktif"; }, 3000);
     }
 
     async function addAsset() {
@@ -366,12 +361,10 @@
         }
 
         const statusText = document.getElementById('statusText');
-        statusText.innerText = `${symbol} ekleniyor, güncel fiyatı aranıyor...`;
+        statusText.innerText = `${symbol} için güncel fiyat aranıyor...`;
 
-        // Otomatik olarak güncel fiyatı dışarıdan bulmaya çalış
+        // Arka planda canlı fiyatı çekmeye çalış, çekemezse şimdilik maliyetini ata
         let livePrice = await fetchBistPrice(symbol);
-        
-        // Eğer anlık fiyat çekilemezse geçici olarak girdiğin maliyeti yazar, butondan sonra tekrar güncelleyebilirsin
         if (!livePrice || livePrice <= 0) {
             livePrice = newAvgCost;
         }
