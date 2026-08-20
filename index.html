@@ -184,7 +184,7 @@
 <div class="container">
     <header>
         <h1>Portföyüm v4</h1>
-        <div class="live-status">
+        <div class="live-status" id="statusBadge">
             <span class="pulse-dot"></span> Canlı Veri Servisi
         </div>
     </header>
@@ -274,22 +274,36 @@
         return isNaN(num) ? 0 : num;
     }
 
+    // Çift Kaynaklı Canlı Fiyat Çekici
     async function fetchPriceFromBist(symbol) {
         const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
+        
+        // 1. Yöntem: Yahoo Finance Direct Proxy
         try {
             const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
             
             const res = await fetch(proxyUrl);
-            if (!res.ok) return null;
-            
-            const data = await res.json();
-            const parsed = JSON.parse(data.contents);
-            const price = parsed.chart.result[0].meta.regularMarketPrice;
-            return price || null;
-        } catch (e) {
-            return null;
-        }
+            if (res.ok) {
+                const data = await res.json();
+                const parsed = JSON.parse(data.contents);
+                const price = parsed.chart.result[0].meta.regularMarketPrice;
+                if (price && price > 0) return price;
+            }
+        } catch (e) {}
+
+        // 2. Yöntem: Yedek CORS Proxy
+        try {
+            const backupUrl = `https://corsproxy.io/?${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + cleanSymbol + '.IS')}`;
+            const res2 = await fetch(backupUrl);
+            if (res2.ok) {
+                const data2 = await res2.json();
+                const price2 = data2.chart.result[0].meta.regularMarketPrice;
+                if (price2 && price2 > 0) return price2;
+            }
+        } catch (e) {}
+
+        return null;
     }
 
     function addAsset() {
@@ -453,7 +467,7 @@
 
     render();
     fetchLivePrices();
-    setInterval(fetchLivePrices, 20000);
+    setInterval(fetchLivePrices, 15000);
 </script>
 
 </body>
