@@ -101,7 +101,6 @@
             "GARAN": 95.40
         };
 
-        // portfoy yapısı: Her hisse kendi içinde işlemler (islemler) dizisini tutacak
         let portfoy = JSON.parse(localStorage.getItem('user_portfoy')) || [];
 
         function toggleEngine() {
@@ -195,7 +194,7 @@
                         <td>${guncelFiyat.toFixed(2)} TL</td>
                         <td>${toplamDeger.toFixed(2)} TL</td>
                         <td class="${renkClass} fw-bold">${karZarar.toFixed(2)} TL</td>
-                        <td><button class="btn btn-sm btn-outline-danger" onclick="hisseSil(${index})Hisse">Sil</button></td>
+                        <td><button class="btn btn-sm btn-outline-danger" onclick="hisseSil(${index})">Sil</button></td>
                     </tr>
                     <tr id="detay-row-${index}" style="display: none;" class="detay-satir">
                         <td colspan="8">
@@ -215,7 +214,7 @@
                 let ul = document.getElementById(`gecmis-list-${index}`);
                 if(ul) {
                     item.islemGecmisi.forEach((islem, i) => {
-                        ul.innerHTML += `<li>${islem.tarih} - <b>${islem.adet} Adet</b> | Birim Maliyet: <b>${islem.maliyet.toFixed(2)} TL</b> <button class="btn btn-xxs text-danger p-0 ms-2" onclick="islemSil(${index}, ${i})" title="Bu alımı sil">✖</button></li>`;
+                        ul.innerHTML += `<li>${islem.tarih} - <b>${islem.adet} Adet</b> | Birim Maliyet: <b>${islem.maliyet.toFixed(2)} TL</b> <button class="btn btn-link text-danger p-0 ms-2 text-decoration-none fw-bold" onclick="islemSil(${index}, ${i})" title="Bu alımı sil">✖</button></li>`;
                     });
                 }
             });
