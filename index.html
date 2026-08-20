@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v26</title>
+    <title>Portföyüm v27</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -144,6 +144,22 @@
 
         button.btn-primary:hover { background-color: var(--accent-hover); color: #fff; }
 
+        .btn-refresh {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-refresh:hover { background-color: var(--accent-primary); color: #0b0f19; }
+
         .table-container {
             overflow-x: auto;
             border: 1px solid var(--card-border);
@@ -205,7 +221,7 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v26 🚀</h1>
+        <h1>Portföyüm v27 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
             <span id="statusText">Portföy Aktif</span>
@@ -247,6 +263,7 @@
     <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
         <div class="section-header-flex" style="padding: 0 20px;">
             <div class="section-title" style="margin: 0;">Hisse Portföyü</div>
+            <button class="btn-refresh" onclick="fetchAllPrices()">🔄 Fiyatları Güncelle</button>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -284,12 +301,12 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v26";
+    document.title = "Portföyüm v27";
 
-    let assets = JSON.parse(localStorage.getItem('bist_assets_v26')) || [];
+    let assets = JSON.parse(localStorage.getItem('bist_assets_v27')) || [];
 
     function saveAndRender() {
-        localStorage.setItem('bist_assets_v26', JSON.stringify(assets));
+        localStorage.setItem('bist_assets_v27', JSON.stringify(assets));
         render();
     }
 
@@ -302,12 +319,10 @@
 
     async function fetchBistPrice(symbol) {
         try {
-            // Yahoo Finance BIST uzantısı (.IS) üzerinden anlık fiyat sorgulama
             const ticker = symbol.endsWith('.IS') ? symbol : symbol + '.IS';
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d`;
-            
-            // Alternatif CORSproxy kullanarak tarayıcı engeline takılmadan veri çekme
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+            
             const response = await fetch(proxyUrl);
             const data = await response.json();
             
@@ -317,9 +332,33 @@
                 if (price) return price;
             }
         } catch (e) {
-            console.log("Canlı fiyat alınamadı, maliyet baz alınacak:", e);
+            console.log(`${symbol} için fiyat alınamadı.`);
         }
         return null;
+    }
+
+    // "Fiyatları Güncelle" butonuna basıldığında tüm portföyü tarar ve canlı fiyat çeker
+    async function fetchAllPrices() {
+        if (assets.length === 0) {
+            alert("Portföyde güncellenecek hisse bulunmuyor.");
+            return;
+        }
+
+        const statusText = document.getElementById('statusText');
+        statusText.innerText = "Fiyatlar güncelleniyor...";
+
+        for (let i = 0; i < assets.length; i++) {
+            let livePrice = await fetchBistPrice(assets[i].symbol);
+            if (livePrice && livePrice > 0) {
+                assets[i].currentPrice = livePrice;
+            }
+        }
+
+        saveAndRender();
+        statusText.innerText = `Güncellendi: ${new Date().toLocaleTimeString('tr-TR')}`;
+        setTimeout(() => {
+            statusText.innerText = "Portföy Aktif";
+        }, 3000);
     }
 
     function updateInlinePrice(index, newPriceVal) {
@@ -345,12 +384,10 @@
         }
 
         const statusText = document.getElementById('statusText');
-        statusText.innerText = `${symbol} fiyatı aranıyor...`;
+        statusText.innerText = `${symbol} ekleniyor ve fiyatı sorgulanıyor...`;
 
-        // Otomatik canlı fiyat çekme denemesi
+        // İlk eklemede anlık fiyatı çekmeyi dener, çekemezse maliyeti baz alır
         let livePrice = await fetchBistPrice(symbol);
-        
-        // Eğer canlı fiyat çekilemezse (ağ hatası vb.) geçici olarak maliyet fiyatı atanır
         if (!livePrice || livePrice <= 0) {
             livePrice = newAvgCost;
         }
@@ -366,13 +403,13 @@
             
             existing.amount = totalQty;
             existing.avgCost = totalCostSum / totalQty;
-            existing.currentPrice = livePrice; // Bulunan güncel fiyat güncellenir
+            existing.currentPrice = livePrice;
         } else {
             assets.push({ 
                 symbol: symbol, 
                 amount: newAmount, 
                 avgCost: newAvgCost, 
-                currentPrice: livePrice // Bulunan güncel fiyat yazılır
+                currentPrice: livePrice 
             });
         }
 
