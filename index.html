@@ -3,27 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v37</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Portföyüm v38</title>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
 
     <style>
+
         :root {
             --bg-color: #0b0f19;
             --card-bg: #151c2c;
             --card-border: #232d42;
+
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
+
             --accent-primary: #38bdf8;
             --accent-hover: #0284c7;
 
-            --green-bg: rgba(34, 197, 94, 0.1);
+            --green-bg: rgba(34,197,94,.1);
             --green-text: #4ade80;
 
-            --red-bg: rgba(239, 68, 68, 0.1);
+            --red-bg: rgba(239,68,68,.1);
             --red-text: #f87171;
 
-            --yellow-bg: rgba(234, 179, 8, 0.1);
+            --yellow-bg: rgba(234,179,8,.1);
             --yellow-text: #facc15;
         }
 
@@ -34,98 +41,129 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter',
+                -apple-system,
+                BlinkMacSystemFont,
+                sans-serif;
+
             background-color: var(--bg-color);
             color: var(--text-main);
+
             padding: 24px 16px;
+
             line-height: 1.5;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         header {
             margin-bottom: 20px;
+
             display: flex;
             justify-content: space-between;
             align-items: center;
+
             border-bottom: 1px solid var(--card-border);
+
             padding-bottom: 16px;
+
             flex-wrap: wrap;
+
             gap: 12px;
         }
 
         header h1 {
             font-size: 1.5rem;
             font-weight: 700;
+
             color: var(--accent-primary);
         }
 
         .live-status {
-            font-size: 0.85rem;
+            font-size: .85rem;
+
             color: var(--green-text);
+
             display: flex;
             align-items: center;
+
             gap: 8px;
+
             background-color: var(--green-bg);
+
             padding: 6px 14px;
+
             border-radius: 20px;
-            border: 1px solid rgba(52, 211, 153, 0.2);
+
+            border: 1px solid rgba(52,211,153,.2);
         }
 
         .pulse-dot {
             width: 8px;
             height: 8px;
+
             background-color: var(--green-text);
+
             border-radius: 50%;
+
             display: inline-block;
-            box-shadow: 0 0 8px var(--green-text);
+
+            box-shadow:
+                0 0 8px var(--green-text);
         }
 
         .grid-summary {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(220px, 1fr));
+
             gap: 16px;
+
             margin-bottom: 24px;
         }
 
         .card {
             background-color: var(--card-bg);
+
             border: 1px solid var(--card-border);
+
             border-radius: 12px;
+
             padding: 20px;
         }
 
         .card-title {
-            font-size: 0.8rem;
+            font-size: .8rem;
+
             font-weight: 600;
+
             color: var(--text-muted);
+
             text-transform: uppercase;
+
             margin-bottom: 6px;
         }
 
         .card-value {
             font-size: 1.6rem;
+
             font-weight: 700;
         }
 
         .section-card {
             background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
 
-        .section-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 10px;
+            border: 1px solid var(--card-border);
+
+            border-radius: 12px;
+
+            padding: 20px;
+
+            margin-bottom: 24px;
         }
 
         .section-title {
@@ -135,11 +173,17 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 140px;
+
+            grid-template-columns:
+                1fr 1fr 1fr 140px;
+
             gap: 12px;
+
+            margin-top: 16px;
         }
 
         @media (max-width: 768px) {
+
             .form-grid {
                 grid-template-columns: 1fr;
             }
@@ -147,12 +191,19 @@
 
         input {
             background-color: var(--bg-color);
+
             border: 1px solid var(--card-border);
+
             color: var(--text-main);
+
             padding: 10px 14px;
+
             border-radius: 8px;
-            font-size: 0.9rem;
+
+            font-size: .9rem;
+
             outline: none;
+
             width: 100%;
         }
 
@@ -164,91 +215,224 @@
             font-family: inherit;
         }
 
-        button.btn-primary {
+        .btn-primary {
             background-color: var(--accent-primary);
+
             color: #0b0f19;
+
             font-weight: 700;
+
             border: none;
+
             padding: 12px 20px;
+
             border-radius: 8px;
+
             cursor: pointer;
-            font-size: 0.95rem;
+
+            font-size: .95rem;
         }
 
-        button.btn-primary:hover {
+        .btn-primary:hover {
             background-color: var(--accent-hover);
-            color: #fff;
+
+            color: white;
         }
 
-        .btn-refresh-mega {
-            background-color: var(--accent-primary);
-            color: #0b0f19;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            cursor: pointer;
+        .portfolio-header {
             display: flex;
+
+            justify-content: space-between;
+
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
-            transition: all 0.2s;
+
+            flex-wrap: wrap;
+
+            gap: 15px;
+
+            margin-bottom: 16px;
         }
 
-        .btn-refresh-mega:hover {
-            background-color: #0284c7;
-            color: #fff;
+        .controls {
+            display: flex;
+
+            align-items: center;
+
+            flex-wrap: wrap;
+
+            gap: 10px;
         }
 
-        .btn-refresh-mega:disabled {
-            opacity: 0.6;
+        .btn-refresh {
+            background-color: var(--accent-primary);
+
+            color: #0b0f19;
+
+            border: none;
+
+            padding: 11px 18px;
+
+            border-radius: 8px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 4px 14px rgba(56,189,248,.25);
+        }
+
+        .btn-refresh:hover {
+            background-color: var(--accent-hover);
+
+            color: white;
+        }
+
+        .btn-refresh:disabled {
+            opacity: .55;
+
             cursor: not-allowed;
+        }
+
+        .auto-box {
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            background-color: var(--bg-color);
+
+            border: 1px solid var(--card-border);
+
+            padding: 9px 12px;
+
+            border-radius: 8px;
+
+            font-size: .82rem;
+
+            color: var(--text-muted);
+        }
+
+        .auto-box input {
+            width: auto;
+        }
+
+        .last-update {
+            color: var(--text-muted);
+
+            font-size: .78rem;
+        }
+
+        .status-message {
+            min-height: 22px;
+
+            margin-bottom: 12px;
+
+            font-size: .82rem;
+
+            color: var(--text-muted);
+        }
+
+        .success {
+            color: var(--green-text);
+        }
+
+        .warning {
+            color: var(--yellow-text);
+        }
+
+        .error {
+            color: var(--red-text);
         }
 
         .table-container {
             overflow-x: auto;
+
             border: 1px solid var(--card-border);
+
             border-radius: 12px;
+
             background-color: var(--card-bg);
         }
 
         table {
             width: 100%;
+
             border-collapse: collapse;
+
             text-align: left;
-            font-size: 0.9rem;
+
+            font-size: .9rem;
         }
 
         th {
             background-color: #111827;
+
             color: var(--text-muted);
+
             padding: 14px 16px;
-            border-bottom: 1px solid var(--card-border);
-            font-size: 0.75rem;
+
+            border-bottom:
+                1px solid var(--card-border);
+
+            font-size: .75rem;
+
             text-transform: uppercase;
+
+            white-space: nowrap;
         }
 
         td {
             padding: 14px 16px;
-            border-bottom: 1px solid var(--card-border);
+
+            border-bottom:
+                1px solid var(--card-border);
+
+            white-space: nowrap;
+        }
+
+        .price-input {
+            width: 110px;
+
+            padding: 6px 10px;
+
+            border-radius: 6px;
+
+            font-size: .9rem;
+
+            text-align: right;
+
+            border: 1px solid var(--card-border);
+
+            background-color: var(--bg-color);
+
+            color: var(--accent-primary);
+
+            font-weight: 600;
         }
 
         .badge {
             display: inline-block;
+
             padding: 4px 8px;
+
             border-radius: 6px;
+
             font-weight: 600;
-            font-size: 0.85rem;
+
+            font-size: .85rem;
         }
 
         .badge-positive {
             background-color: var(--green-bg);
+
             color: var(--green-text);
         }
 
         .badge-negative {
             background-color: var(--red-bg);
+
             color: var(--red-text);
         }
 
@@ -260,90 +444,59 @@
             color: var(--red-text);
         }
 
-        .btn-action {
-            background-color: transparent;
-            border: 1px solid var(--card-border);
-            padding: 4px 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            color: var(--text-main);
-        }
-
         .btn-delete {
+            background-color: transparent;
+
+            border: 1px solid var(--card-border);
+
             color: var(--red-text);
+
+            padding: 5px 9px;
+
+            border-radius: 6px;
+
+            cursor: pointer;
         }
 
         .btn-delete:hover {
             background-color: var(--red-bg);
         }
 
-        .price-input {
-            width: 110px;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            text-align: right;
-            border: 1px solid var(--card-border);
-            background-color: var(--bg-color);
-            color: var(--accent-primary);
-            font-weight: 600;
-        }
-
-        .update-panel {
+        .market-info {
             display: flex;
-            align-items: center;
+
             gap: 12px;
+
             flex-wrap: wrap;
+
+            margin-bottom: 14px;
         }
 
-        .auto-update-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            font-size: 0.82rem;
-            background: var(--bg-color);
+        .info-badge {
+            background-color: var(--bg-color);
+
             border: 1px solid var(--card-border);
-            padding: 8px 12px;
-            border-radius: 8px;
-        }
 
-        .auto-update-box input {
-            width: auto;
-            accent-color: var(--accent-primary);
-            cursor: pointer;
-        }
-
-        .last-update {
             color: var(--text-muted);
-            font-size: 0.78rem;
+
+            padding: 6px 10px;
+
+            border-radius: 7px;
+
+            font-size: .75rem;
         }
 
-        .status-message {
-            margin-top: 12px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            min-height: 20px;
+        .info-badge strong {
+            color: var(--text-main);
         }
 
-        .success-text {
-            color: var(--green-text);
-        }
-
-        .warning-text {
-            color: var(--yellow-text);
-        }
-
-        .error-text {
-            color: var(--red-text);
-        }
-
-        .loading {
-            animation: spin 1s linear infinite;
+        .spin {
+            animation:
+                spin 1s linear infinite;
         }
 
         @keyframes spin {
+
             from {
                 transform: rotate(0deg);
             }
@@ -353,16 +506,6 @@
             }
         }
 
-        @media (max-width: 900px) {
-            .section-header-flex {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .update-panel {
-                width: 100%;
-            }
-        }
     </style>
 </head>
 
@@ -370,47 +513,109 @@
 
 <div class="container">
 
-    <!-- BAŞLIK -->
+
+    <!-- ======================================================
+         HEADER
+    ======================================================= -->
+
     <header>
-        <h1>Portföyüm v37 🚀</h1>
+
+        <h1>
+            Portföyüm v38 🚀
+        </h1>
 
         <div class="live-status">
+
             <span class="pulse-dot"></span>
-            <span id="statusText">Sistem Hazır</span>
+
+            <span id="statusText">
+                Sistem Hazır
+            </span>
+
         </div>
+
     </header>
 
 
-    <!-- ÖZET KARTLARI -->
+    <!-- ======================================================
+         ÖZET
+    ======================================================= -->
+
     <div class="grid-summary">
 
         <div class="card">
-            <div class="card-title">Portföy Değeri</div>
-            <div class="card-value" id="totalValue">₺0.00</div>
+
+            <div class="card-title">
+                Portföy Değeri
+            </div>
+
+            <div
+                class="card-value"
+                id="totalValue"
+            >
+                ₺0.00
+            </div>
+
         </div>
 
-        <div class="card">
-            <div class="card-title">Toplam Maliyet</div>
-            <div class="card-value" id="totalCost">₺0.00</div>
-        </div>
 
         <div class="card">
-            <div class="card-title">Toplam Kar / Zarar</div>
-            <div class="card-value" id="totalProfit">₺0.00</div>
+
+            <div class="card-title">
+                Toplam Maliyet
+            </div>
+
+            <div
+                class="card-value"
+                id="totalCost"
+            >
+                ₺0.00
+            </div>
+
         </div>
 
+
         <div class="card">
-            <div class="card-title">Kar Oranı</div>
-            <div class="card-value" id="totalProfitRatio">%0.00</div>
+
+            <div class="card-title">
+                Toplam Kar / Zarar
+            </div>
+
+            <div
+                class="card-value"
+                id="totalProfit"
+            >
+                ₺0.00
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                Kar Oranı
+            </div>
+
+            <div
+                class="card-value"
+                id="totalProfitRatio"
+            >
+                %0.00
+            </div>
+
         </div>
 
     </div>
 
 
-    <!-- YENİ HİSSE EKLE -->
+    <!-- ======================================================
+         YENİ HİSSE
+    ======================================================= -->
+
     <div class="section-card">
 
-        <div class="section-title" style="margin-bottom: 16px;">
+        <div class="section-title">
             Yeni Hisse Ekle
         </div>
 
@@ -436,7 +641,6 @@
             >
 
             <button
-                type="button"
                 class="btn-primary"
                 onclick="addAsset()"
             >
@@ -448,42 +652,50 @@
     </div>
 
 
-    <!-- PORTFÖY -->
-    <div
-        class="section-card"
-        style="padding: 20px 0 0 0; overflow: hidden;"
-    >
+    <!-- ======================================================
+         PORTFÖY
+    ======================================================= -->
 
-        <div
-            class="section-header-flex"
-            style="padding: 0 20px;"
-        >
+    <div class="section-card">
 
-            <div class="section-title" style="margin: 0;">
-                Hisse Portföyü
+        <div class="portfolio-header">
+
+            <div>
+
+                <div class="section-title">
+                    Hisse Portföyü
+                </div>
+
             </div>
 
-            <div class="update-panel">
 
-                <label class="auto-update-box">
+            <div class="controls">
+
+                <label class="auto-box">
+
                     <input
                         type="checkbox"
                         id="autoUpdate"
                         checked
                         onchange="toggleAutoUpdate()"
                     >
+
                     Otomatik Güncelle
+                    (30 sn)
+
                 </label>
+
 
                 <span
                     class="last-update"
                     id="lastUpdate"
                 >
-                    Son güncelleme: Henüz yapılmadı
+                    Son güncelleme: -
                 </span>
 
+
                 <button
-                    class="btn-refresh-mega"
+                    class="btn-refresh"
                     id="refreshButton"
                     onclick="fetchAllLivePrices()"
                 >
@@ -495,36 +707,107 @@
         </div>
 
 
-        <!-- DURUM MESAJI -->
+        <!-- PİYASA DURUMU -->
+
+        <div class="market-info">
+
+            <div class="info-badge">
+
+                Toplam Portföy:
+                <strong id="portfolioCount">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="info-badge">
+
+                Piyasa Verisi:
+                <strong id="marketCount">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div class="info-badge">
+
+                Son Başarılı:
+                <strong id="successCount">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div class="info-badge">
+
+                Bulunamayan:
+                <strong id="failedCount">
+                    -
+                </strong>
+
+            </div>
+
+        </div>
+
+
         <div
-            id="updateMessage"
             class="status-message"
-            style="padding: 0 20px 12px 20px;"
+            id="updateMessage"
         ></div>
 
 
         <!-- TABLO -->
-        <div
-            class="table-container"
-            style="border: none; border-radius: 0;"
-        >
+
+        <div class="table-container">
 
             <table>
 
                 <thead>
+
                     <tr>
-                        <th>Hisse</th>
-                        <th>Adet</th>
-                        <th>Ort. Maliyet</th>
-                        <th>Güncel Fiyat (₺)</th>
-                        <th>Toplam Değer</th>
-                        <th>Kar / Zarar</th>
-                        <th>Oran (%)</th>
-                        <th>İşlem</th>
+
+                        <th>
+                            Hisse
+                        </th>
+
+                        <th>
+                            Adet
+                        </th>
+
+                        <th>
+                            Ort. Maliyet
+                        </th>
+
+                        <th>
+                            Güncel Fiyat
+                        </th>
+
+                        <th>
+                            Toplam Değer
+                        </th>
+
+                        <th>
+                            Kar / Zarar
+                        </th>
+
+                        <th>
+                            Oran
+                        </th>
+
+                        <th>
+                            İşlem
+                        </th>
+
                     </tr>
+
                 </thead>
 
+
                 <tbody id="assetList">
+
                 </tbody>
 
             </table>
@@ -538,1023 +821,1473 @@
 
 <script>
 
-    document.title = "Portföyüm v37";
+
+/* ============================================================
+   AYARLAR
+============================================================ */
+
+
+/*
+ * Mevcut v36 localStorage anahtarını koruyoruz.
+ */
+
+const STORAGE_KEY =
+    "bist_assets_v36";
+
+
+/*
+ * 30 saniye
+ */
+
+const AUTO_UPDATE_INTERVAL =
+    30000;
+
+
+/*
+ * Toplu BIST API.
+ *
+ * Önce public endpoint deneniyor.
+ *
+ * Eğer sağlayıcı daha sonra API key isterse
+ * aşağıdaki API_KEY alanına anahtar eklenebilir.
+ */
+
+const PUBLIC_BIST_API =
+    "https://api.apinoktam.erenozdemir.com.tr/public/v1/bist";
+
+
+const BIST_API =
+    "https://api.apinoktam.erenozdemir.com.tr/v1/bist";
+
+
+const API_KEY =
+    "";
+
+
+/*
+ * Durum değişkenleri
+ */
+
+let assets =
+    JSON.parse(
+        localStorage.getItem(STORAGE_KEY)
+    ) || [];
+
+
+let autoUpdateTimer =
+    null;
+
+
+let isUpdating =
+    false;
+
+
+/*
+ * Son alınan toplu piyasa verisi.
+ *
+ * Örneğin:
+
+   {
+       SASA: 34.50,
+       ASELS: 215.20,
+       THYAO: 289.50
+   }
+
+ */
+
+let marketPrices = {};
+
+
+/* ============================================================
+   YARDIMCI FONKSİYONLAR
+============================================================ */
+
+
+/*
+ * Sayıya çevir
+ */
+
+function parseNum(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return 0;
+    }
 
 
     /*
-     * ============================================================
-     * PORTFÖY VERİLERİ
-     * ============================================================
+     * Türkçe:
      *
-     * v36 ile aynı localStorage anahtarını kullanıyoruz.
-     * Böylece mevcut hisselerin kaybolmaması amaçlanıyor.
+     * 1.234,56
+     *
+     * -> 1234.56
      */
 
-    let assets =
-        JSON.parse(localStorage.getItem('bist_assets_v36')) || [];
-
-
-    /*
-     * Otomatik güncelleme ayarları
-     */
-
-    const AUTO_UPDATE_INTERVAL = 30000; // 30 saniye
-
-    let autoUpdateTimer = null;
-
-    let isUpdating = false;
-
-
-    /*
-     * ============================================================
-     * SAYI DÖNÜŞTÜRME
-     * ============================================================
-     */
-
-    function parseNum(val) {
-
-        if (val === null || val === undefined || val === '') {
-            return 0;
-        }
-
-        let clean = val
+    let clean =
+        value
             .toString()
             .trim()
-            .replace(/\./g, '')
-            .replace(',', '.');
-
-        let num = parseFloat(clean);
-
-        return isNaN(num) ? 0 : num;
-    }
+            .replace(/\./g, "")
+            .replace(",", ".");
 
 
-    /*
-     * ============================================================
-     * KAYDET + EKRANI YENİLE
-     * ============================================================
-     */
+    let number =
+        parseFloat(clean);
 
-    function saveAndRender() {
 
-        localStorage.setItem(
-            'bist_assets_v36',
-            JSON.stringify(assets)
+    return isNaN(number)
+        ? 0
+        : number;
+}
+
+
+/*
+ * LocalStorage kaydet
+ */
+
+function saveAssets() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(assets)
+    );
+}
+
+
+/*
+ * Durum mesajı
+ */
+
+function setMessage(
+    message,
+    type = ""
+) {
+
+    const el =
+        document.getElementById(
+            "updateMessage"
         );
 
-        render();
-    }
 
+    el.innerText =
+        message;
+
+
+    el.className =
+        "status-message";
+
+
+    if (type) {
+
+        el.classList.add(type);
+    }
+}
+
+
+/* ============================================================
+   TOPLU BIST VERİSİ
+============================================================ */
+
+
+/*
+ * API'den bütün BIST hisselerini tek seferde
+ * çekmeye çalışır.
+ */
+
+async function fetchMarketData() {
 
     /*
-     * ============================================================
-     * MANUEL FİYAT DEĞİŞTİRME
-     * ============================================================
+     * Önce public endpoint.
      */
 
-    function updateInlinePrice(index, newPriceVal) {
+    try {
 
-        let price = parseNum(newPriceVal);
-
-        if (price >= 0) {
-
-            assets[index].currentPrice = price;
-
-            saveAndRender();
-
-            setStatus(
-                `${assets[index].symbol} fiyatı manuel olarak güncellendi.`,
-                'success'
-            );
-        }
-    }
-
-
-    /*
-     * ============================================================
-     * YAHOO FINANCE'TAN BIST FİYATI AL
-     * ============================================================
-     *
-     * Örnek:
-     *
-     * THYAO
-     *
-     * Yahoo tarafında:
-     *
-     * THYAO.IS
-     *
-     */
-
-    async function fetchBistPriceFromApi(symbol) {
-
-        try {
-
-            let cleanSymbol = symbol
-                .toUpperCase()
-                .replace('.IS', '')
-                .trim();
-
-            const yahooUrl =
-                `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS?interval=1d&range=1d`;
-
-            const proxyUrl =
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(yahooUrl)}`;
-
-
-            const controller = new AbortController();
-
-            const timeoutId = setTimeout(() => {
-                controller.abort();
-            }, 10000);
-
-
-            const response = await fetch(
-                proxyUrl,
+        const response =
+            await fetch(
+                PUBLIC_BIST_API +
+                "?t=" +
+                Date.now(),
                 {
-                    method: 'GET',
-                    cache: 'no-store',
-                    signal: controller.signal
+                    method: "GET",
+                    cache: "no-store"
                 }
             );
 
 
-            clearTimeout(timeoutId);
+        if (response.ok) {
+
+            const json =
+                await response.json();
 
 
-            if (!response.ok) {
-                throw new Error(
-                    `HTTP ${response.status}`
+            const parsed =
+                normalizeMarketResponse(
+                    json
                 );
-            }
-
-
-            const data = await response.json();
 
 
             if (
-                data &&
-                data.chart &&
-                data.chart.result &&
-                data.chart.result[0]
+                Object.keys(parsed).length > 0
             ) {
 
-                const result = data.chart.result[0];
+                return parsed;
+            }
+        }
 
-                const meta = result.meta || {};
+    } catch (error) {
+
+        console.log(
+            "Public BIST API başarısız:",
+            error
+        );
+    }
 
 
-                /*
-                 * Öncelik:
-                 *
-                 * regularMarketPrice
-                 *
-                 * olmazsa chartPreviousClose
-                 */
+    /*
+     * Public endpoint çalışmazsa,
+     * API anahtarı verilmişse normal endpoint.
+     */
 
-                let price = meta.regularMarketPrice;
+    if (API_KEY.trim() !== "") {
+
+        try {
+
+            const response =
+                await fetch(
+                    BIST_API +
+                    "?limit=1000&t=" +
+                    Date.now(),
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "x-api-key":
+                                API_KEY
+                        },
+
+                        cache: "no-store"
+                    }
+                );
+
+
+            if (response.ok) {
+
+                const json =
+                    await response.json();
+
+
+                const parsed =
+                    normalizeMarketResponse(
+                        json
+                    );
+
 
                 if (
-                    !price ||
-                    !isFinite(price) ||
-                    price <= 0
-                ) {
-                    price = meta.chartPreviousClose;
-                }
-
-
-                if (
-                    price &&
-                    isFinite(price) &&
-                    price > 0
+                    Object.keys(parsed).length > 0
                 ) {
 
-                    return parseFloat(price);
+                    return parsed;
                 }
             }
 
         } catch (error) {
 
             console.log(
-                `${symbol} fiyat alınamadı:`,
-                error.message
+                "API key endpoint başarısız:",
+                error
             );
         }
-
-
-        return null;
     }
 
 
+    throw new Error(
+        "Toplu BIST fiyat verisi alınamadı."
+    );
+}
+
+
+/*
+ * API cevabını standart hale getiriyoruz.
+ *
+ * Çünkü API'nin response yapısı ileride
+ * değişirse sadece bu fonksiyonu değiştirmek
+ * yeterli olacak.
+ */
+
+function normalizeMarketResponse(json) {
+
+    let rows = [];
+
+
     /*
-     * ============================================================
-     * TÜM HİSSELERİ GÜNCELLE
-     * ============================================================
+     * Muhtemel yapılar:
+     *
+     * data
+     * data.items
+     * data.stocks
+     * data.results
+     * data.rows
+     *
+     * veya doğrudan array
      */
 
-    async function fetchAllLivePrices() {
+    if (Array.isArray(json)) {
 
-        if (isUpdating) {
+        rows = json;
+
+    } else if (
+        json &&
+        Array.isArray(json.data)
+    ) {
+
+        rows = json.data;
+
+    } else if (
+        json &&
+        json.data &&
+        Array.isArray(json.data.items)
+    ) {
+
+        rows = json.data.items;
+
+    } else if (
+        json &&
+        json.data &&
+        Array.isArray(json.data.stocks)
+    ) {
+
+        rows = json.data.stocks;
+
+    } else if (
+        json &&
+        json.data &&
+        Array.isArray(json.data.results)
+    ) {
+
+        rows = json.data.results;
+
+    } else if (
+        json &&
+        Array.isArray(json.items)
+    ) {
+
+        rows = json.items;
+
+    } else if (
+        json &&
+        Array.isArray(json.results)
+    ) {
+
+        rows = json.results;
+
+    }
+
+
+    const result = {};
+
+
+    /*
+     * Her hissenin sembolünü ve fiyatını
+     * bulmaya çalışıyoruz.
+     */
+
+    rows.forEach(row => {
+
+        if (!row) {
             return;
         }
 
 
-        if (assets.length === 0) {
+        const symbol =
+            String(
+                row.symbol ??
+                row.sembol ??
+                row.code ??
+                row.kod ??
+                row.ticker ??
+                row.hisse ??
+                ""
+            )
+            .toUpperCase()
+            .replace(".IS", "")
+            .trim();
 
-            setStatus(
-                'Önce listeye hisse eklemelisiniz.',
-                'warning'
+
+        /*
+         * Güncel fiyat için muhtemel alanlar
+         */
+
+        let price =
+            row.price ??
+            row.currentPrice ??
+            row.current_price ??
+            row.lastPrice ??
+            row.last_price ??
+            row.last ??
+            row.close ??
+            row.closing ??
+            row.fiyat ??
+            row.son ??
+            row.sonFiyat ??
+            row.regularMarketPrice;
+
+
+        price =
+            parseFloat(
+                String(price ?? "")
+                .replace(",", ".")
             );
 
-            return;
+
+        if (
+            symbol &&
+            isFinite(price) &&
+            price > 0
+        ) {
+
+            result[symbol] =
+                price;
+        }
+
+    });
+
+
+    return result;
+}
+
+
+/* ============================================================
+   PORTFÖYÜ TOPLU FİYATLARLA GÜNCELLE
+============================================================ */
+
+
+/*
+ * ANA FONKSİYON
+ */
+
+async function fetchAllLivePrices() {
+
+    if (isUpdating) {
+        return;
+    }
+
+
+    if (assets.length === 0) {
+
+        setMessage(
+            "Önce portföye hisse eklemelisiniz.",
+            "warning"
+        );
+
+        return;
+    }
+
+
+    isUpdating =
+        true;
+
+
+    const button =
+        document.getElementById(
+            "refreshButton"
+        );
+
+
+    const statusText =
+        document.getElementById(
+            "statusText"
+        );
+
+
+    button.disabled =
+        true;
+
+
+    button.innerHTML =
+        "⏳ Toplu fiyatlar alınıyor...";
+
+
+    statusText.innerText =
+        "Piyasa verisi alınıyor...";
+
+
+    setMessage(
+        "BIST'teki toplu fiyat listesi alınıyor..."
+    );
+
+
+    try {
+
+        /*
+         * ======================================================
+         * 1. TEK İSTEK
+         *
+         * Bütün BIST fiyatlarını alıyoruz.
+         * ======================================================
+         */
+
+        marketPrices =
+            await fetchMarketData();
+
+
+        const marketCount =
+            Object.keys(
+                marketPrices
+            ).length;
+
+
+        document.getElementById(
+            "marketCount"
+        ).innerText =
+            marketCount;
+
+
+        /*
+         * ======================================================
+         * 2. PORTFÖYÜ EŞLEŞTİR
+         * ======================================================
+         */
+
+        let success =
+            0;
+
+
+        let failed =
+            0;
+
+
+        let failedSymbols =
+            [];
+
+
+        assets.forEach(
+            asset => {
+
+                const symbol =
+                    String(
+                        asset.symbol
+                    )
+                    .toUpperCase()
+                    .replace(".IS", "")
+                    .trim();
+
+
+                /*
+                 * Toplu piyasa verisinin
+                 * içinde bu hisse var mı?
+                 */
+
+                const livePrice =
+                    marketPrices[
+                        symbol
+                    ];
+
+
+                if (
+                    livePrice !== undefined &&
+                    livePrice > 0
+                ) {
+
+                    /*
+                     * Fiyat bulundu.
+                     *
+                     * Portföye yaz.
+                     */
+
+                    asset.currentPrice =
+                        livePrice;
+
+
+                    success++;
+
+                } else {
+
+                    /*
+                     * Fiyat bulunamadı.
+                     *
+                     * ESKİ FİYATI KORU.
+                     */
+
+                    failed++;
+
+                    failedSymbols.push(
+                        symbol
+                    );
+                }
+
+            }
+        );
+
+
+        /*
+         * ======================================================
+         * 3. KAYDET
+         * ======================================================
+         */
+
+        saveAssets();
+
+
+        /*
+         * ======================================================
+         * 4. EKRANI YENİLE
+         * ======================================================
+         */
+
+        render();
+
+
+        /*
+         * Sayaçlar
+         */
+
+        document.getElementById(
+            "successCount"
+        ).innerText =
+            success;
+
+
+        document.getElementById(
+            "failedCount"
+        ).innerText =
+            failed;
+
+
+        /*
+         * Son güncelleme
+         */
+
+        const now =
+            new Date()
+            .toLocaleTimeString(
+                "tr-TR"
+            );
+
+
+        document.getElementById(
+            "lastUpdate"
+        ).innerText =
+            `Son güncelleme: ${now}`;
+
+
+        /*
+         * ======================================================
+         * SONUÇ
+         * ======================================================
+         */
+
+        if (failed === 0) {
+
+            statusText.innerText =
+                `✓ ${success}/${assets.length} güncellendi`;
+
+
+            setMessage(
+                `✓ Toplu piyasa verisi alındı. ${success} portföy hissesinin tamamı güncellendi.`,
+                "success"
+            );
+
+        } else {
+
+            statusText.innerText =
+                `${success}/${assets.length} güncellendi`;
+
+
+            let message =
+                `✓ ${success} güncellendi. ` +
+                `⚠ ${failed} bulunamadı.`;
+
+
+            /*
+             * Çok fazla hisse varsa
+             * ekranda 10 taneden fazlasını
+             * göstermiyoruz.
+             */
+
+            if (
+                failedSymbols.length > 0
+            ) {
+
+                const preview =
+                    failedSymbols
+                        .slice(0, 10)
+                        .join(", ");
+
+
+                message +=
+                    ` Bulunamayanlar: ${preview}`;
+
+
+                if (
+                    failedSymbols.length > 10
+                ) {
+
+                    message +=
+                        ` ... (+${failedSymbols.length - 10})`;
+                }
+            }
+
+
+            setMessage(
+                message,
+                "warning"
+            );
         }
 
 
-        isUpdating = true;
+    } catch (error) {
 
-
-        const statusText =
-            document.getElementById('statusText');
-
-        const updateMessage =
-            document.getElementById('updateMessage');
-
-        const refreshButton =
-            document.getElementById('refreshButton');
+        console.error(
+            "Toplu güncelleme hatası:",
+            error
+        );
 
 
         statusText.innerText =
-            "Fiyatlar güncelleniyor...";
+            "Veri alınamadı";
 
 
-        updateMessage.className =
-            "status-message";
-
-
-        updateMessage.innerText =
-            "Piyasadan fiyatlar alınıyor...";
-
-
-        refreshButton.disabled = true;
-
-        refreshButton.innerHTML =
-            '⏳ Güncelleniyor...';
-
-
-        let successCount = 0;
-
-        let failedCount = 0;
-
-        let failedSymbols = [];
-
-
-        /*
-         * Hisseleri sırayla çekiyoruz.
-         *
-         * Böylece aynı anda çok fazla istek
-         * gönderip proxy'yi zorlamıyoruz.
-         */
-
-        for (let i = 0; i < assets.length; i++) {
-
-            const symbol = assets[i].symbol;
-
-
-            updateMessage.innerText =
-                `${symbol} fiyatı alınıyor... (${i + 1}/${assets.length})`;
-
-
-            const livePrice =
-                await fetchBistPriceFromApi(symbol);
-
-
-            if (
-                livePrice !== null &&
-                livePrice > 0
-            ) {
-
-                assets[i].currentPrice =
-                    livePrice;
-
-                successCount++;
-
-            } else {
-
-                /*
-                 * Fiyat alınamazsa mevcut fiyatı
-                 * kesinlikle silmiyoruz.
-                 */
-
-                failedCount++;
-
-                failedSymbols.push(symbol);
-            }
-        }
-
-
-        /*
-         * Değişiklikleri kaydet
-         */
-
-        localStorage.setItem(
-            'bist_assets_v36',
-            JSON.stringify(assets)
+        setMessage(
+            "❌ Toplu BIST fiyat verisi alınamadı. Mevcut fiyatlar korunuyor.",
+            "error"
         );
+
+    } finally {
+
+        button.disabled =
+            false;
+
+
+        button.innerHTML =
+            "🔄 Piyasadan Canlı Güncelle";
+
+
+        isUpdating =
+            false;
+
+
+        setTimeout(
+            () => {
+
+                if (!isUpdating) {
+
+                    statusText.innerText =
+                        "Sistem Hazır";
+                }
+
+            },
+            5000
+        );
+    }
+}
+
+
+/* ============================================================
+   MANUEL FİYAT DEĞİŞTİRME
+============================================================ */
+
+function updateInlinePrice(
+    index,
+    value
+) {
+
+    const price =
+        parseNum(value);
+
+
+    if (
+        price >= 0
+    ) {
+
+        assets[index]
+            .currentPrice =
+            price;
+
+
+        saveAssets();
 
 
         render();
 
 
-        const now =
-            new Date().toLocaleTimeString(
-                'tr-TR'
-            );
-
-
-        document.getElementById('lastUpdate').innerText =
-            `Son güncelleme: ${now}`;
-
-
-        /*
-         * Sonuç mesajı
-         */
-
-        if (failedCount === 0) {
-
-            statusText.innerText =
-                `Güncellendi (${successCount}/${assets.length})`;
-
-            updateMessage.className =
-                "status-message success-text";
-
-            updateMessage.innerText =
-                `✓ ${successCount} hissenin fiyatı başarıyla güncellendi.`;
-
-        } else {
-
-            statusText.innerText =
-                `Kısmi güncelleme (${successCount}/${assets.length})`;
-
-            updateMessage.className =
-                "status-message warning-text";
-
-            updateMessage.innerText =
-                `✓ ${successCount} güncellendi. ⚠ ${failedCount} alınamadı: ${failedSymbols.join(', ')}`;
-        }
-
-
-        refreshButton.disabled = false;
-
-        refreshButton.innerHTML =
-            '🔄 Piyasadan Canlı Güncelle';
-
-
-        isUpdating = false;
-
-
-        setTimeout(() => {
-
-            if (!isUpdating) {
-                statusText.innerText =
-                    "Sistem Hazır";
-            }
-
-        }, 5000);
+        setMessage(
+            `${assets[index].symbol} manuel olarak güncellendi.`,
+            "success"
+        );
     }
+}
 
 
-    /*
-     * ============================================================
-     * HİSSE EKLE
-     * ============================================================
-     */
+/* ============================================================
+   HİSSE EKLE
+============================================================ */
 
-    async function addAsset() {
+function addAsset() {
 
-        const symbolInput =
-            document.getElementById('symbol');
-
-        const amountInput =
-            document.getElementById('amount');
-
-        const avgCostInput =
-            document.getElementById('avgCost');
-
-
-        const symbol =
-            symbolInput.value
-                .trim()
-                .toUpperCase();
-
-
-        const newAmount =
-            parseNum(amountInput.value);
-
-
-        const newAvgCost =
-            parseNum(avgCostInput.value);
-
-
-        if (
-            !symbol ||
-            newAmount <= 0 ||
-            newAvgCost <= 0
-        ) {
-
-            alert(
-                'Lütfen Hisse Kodu, Adet ve Ort. Maliyet alanlarını eksiksiz doldurun.'
-            );
-
-            return;
-        }
-
-
-        const statusText =
-            document.getElementById('statusText');
-
-
-        statusText.innerText =
-            `${symbol} ekleniyor...`;
-
-
-        /*
-         * Hisse eklenirken de fiyatı almaya çalışıyoruz.
-         *
-         * Başarısız olursa ortalama maliyeti
-         * geçici güncel fiyat olarak kullanıyoruz.
-         */
-
-        let livePrice =
-            await fetchBistPriceFromApi(symbol);
-
-
-        if (
-            !livePrice ||
-            livePrice <= 0
-        ) {
-
-            livePrice =
-                newAvgCost;
-        }
-
-
-        const existingIndex =
-            assets.findIndex(
-                a => a.symbol === symbol
-            );
-
-
-        /*
-         * Hisse zaten varsa:
-         *
-         * miktarı topluyoruz
-         *
-         * ortalama maliyeti yeniden hesaplıyoruz
-         */
-
-        if (existingIndex > -1) {
-
-            let existing =
-                assets[existingIndex];
-
-
-            let totalQty =
-                Number(existing.amount) +
-                Number(newAmount);
-
-
-            let totalCostSum =
-                (
-                    Number(existing.amount) *
-                    Number(existing.avgCost)
-                ) +
-                (
-                    Number(newAmount) *
-                    Number(newAvgCost)
-                );
-
-
-            existing.amount =
-                totalQty;
-
-
-            existing.avgCost =
-                totalCostSum / totalQty;
-
-
-            existing.currentPrice =
-                livePrice;
-
-        } else {
-
-            assets.push({
-
-                symbol: symbol,
-
-                amount: newAmount,
-
-                avgCost: newAvgCost,
-
-                currentPrice: livePrice
-
-            });
-        }
-
-
-        symbolInput.value = '';
-
-        amountInput.value = '';
-
-        avgCostInput.value = '';
-
-
-        saveAndRender();
-
-
-        statusText.innerText =
-            "Sistem Hazır";
-
-
-        /*
-         * Hisse ekledikten sonra fiyatları
-         * tekrar güncellemek istersen otomatik
-         * sistem zaten devam edecek.
-         */
-    }
-
-
-    /*
-     * ============================================================
-     * HİSSE SİL
-     * ============================================================
-     */
-
-    function deleteAsset(index) {
-
-        if (
-            confirm(
-                `${assets[index].symbol} hissesini silmek istediğinize emin misiniz?`
-            )
-        ) {
-
-            assets.splice(index, 1);
-
-            saveAndRender();
-
-
-            setStatus(
-                'Hisse portföyden silindi.',
-                'success'
-            );
-        }
-    }
-
-
-    /*
-     * ============================================================
-     * DURUM MESAJI
-     * ============================================================
-     */
-
-    function setStatus(message, type = '') {
-
-        const updateMessage =
-            document.getElementById('updateMessage');
-
-
-        updateMessage.innerText =
-            message;
-
-
-        updateMessage.className =
-            'status-message';
-
-
-        if (type === 'success') {
-            updateMessage.classList.add(
-                'success-text'
-            );
-        }
-
-        if (type === 'warning') {
-            updateMessage.classList.add(
-                'warning-text'
-            );
-        }
-
-        if (type === 'error') {
-            updateMessage.classList.add(
-                'error-text'
-            );
-        }
-    }
-
-
-    /*
-     * ============================================================
-     * OTOMATİK GÜNCELLEMEYİ BAŞLAT
-     * ============================================================
-     */
-
-    function startAutoUpdate() {
-
-        stopAutoUpdate();
-
-
-        autoUpdateTimer =
-            setInterval(
-                () => {
-
-                    if (
-                        !isUpdating &&
-                        assets.length > 0
-                    ) {
-
-                        fetchAllLivePrices();
-                    }
-
-                },
-                AUTO_UPDATE_INTERVAL
-            );
-    }
-
-
-    /*
-     * ============================================================
-     * OTOMATİK GÜNCELLEMEYİ DURDUR
-     * ============================================================
-     */
-
-    function stopAutoUpdate() {
-
-        if (autoUpdateTimer !== null) {
-
-            clearInterval(
-                autoUpdateTimer
-            );
-
-            autoUpdateTimer = null;
-        }
-    }
-
-
-    /*
-     * ============================================================
-     * OTOMATİK GÜNCELLEME AÇ/KAPAT
-     * ============================================================
-     */
-
-    function toggleAutoUpdate() {
-
-        const checkbox =
-            document.getElementById('autoUpdate');
-
-
-        if (checkbox.checked) {
-
-            startAutoUpdate();
-
-
-            setStatus(
-                'Otomatik güncelleme aktif. Her 30 saniyede kontrol edilecek.',
-                'success'
-            );
-
-        } else {
-
-            stopAutoUpdate();
-
-
-            setStatus(
-                'Otomatik güncelleme kapatıldı.',
-                'warning'
-            );
-        }
-    }
-
-
-    /*
-     * ============================================================
-     * PORTFÖYÜ EKRANA BAS
-     * ============================================================
-     */
-
-    function render() {
-
-        const list =
-            document.getElementById('assetList');
-
-
-        list.innerHTML = '';
-
-
-        let totalVal = 0;
-
-        let totalCst = 0;
-
-
-        if (assets.length === 0) {
-
-            list.innerHTML = `
-                <tr>
-                    <td
-                        colspan="8"
-                        style="
-                            text-align: center;
-                            color: var(--text-muted);
-                            padding: 24px;
-                        "
-                    >
-                        Henüz hisse eklenmedi.
-                    </td>
-                </tr>
-            `;
-        }
-
-
-        assets.forEach(
-            (item, index) => {
-
-
-                /*
-                 * Eski localStorage verilerinde
-                 * eksik alan ihtimaline karşı
-                 * güvenli hale getiriyoruz.
-                 */
-
-                item.amount =
-                    Number(item.amount) || 0;
-
-
-                item.avgCost =
-                    Number(item.avgCost) || 0;
-
-
-                item.currentPrice =
-                    Number(item.currentPrice) || 0;
-
-
-                const itemCost =
-                    item.amount *
-                    item.avgCost;
-
-
-                const itemVal =
-                    item.amount *
-                    item.currentPrice;
-
-
-                const profit =
-                    itemVal -
-                    itemCost;
-
-
-                const ratio =
-                    itemCost > 0
-                        ? (profit / itemCost) * 100
-                        : 0;
-
-
-                totalVal += itemVal;
-
-                totalCst += itemCost;
-
-
-                const isPos =
-                    profit >= 0;
-
-
-                const row =
-                    document.createElement('tr');
-
-
-                row.innerHTML = `
-
-                    <td>
-                        <strong
-                            style="
-                                color: var(--accent-primary);
-                            "
-                        >
-                            ${item.symbol}
-                        </strong>
-                    </td>
-
-
-                    <td>
-                        ${item.amount.toLocaleString('tr-TR')}
-                    </td>
-
-
-                    <td>
-                        ₺${item.avgCost.toLocaleString(
-                            'tr-TR',
-                            {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }
-                        )}
-                    </td>
-
-
-                    <td>
-
-                        <input
-                            type="text"
-                            class="price-input"
-                            value="${item.currentPrice}"
-                            onchange="
-                                updateInlinePrice(
-                                    ${index},
-                                    this.value
-                                )
-                            "
-                        >
-
-                    </td>
-
-
-                    <td>
-                        ₺${itemVal.toLocaleString(
-                            'tr-TR',
-                            {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }
-                        )}
-                    </td>
-
-
-                    <td
-                        class="${isPos ? 'positive' : 'negative'}"
-                    >
-                        ₺${profit.toLocaleString(
-                            'tr-TR',
-                            {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }
-                        )}
-                    </td>
-
-
-                    <td>
-
-                        <span
-                            class="
-                                badge
-                                ${isPos
-                                    ? 'badge-positive'
-                                    : 'badge-negative'
-                                }
-                            "
-                        >
-                            %${ratio.toFixed(2)}
-                        </span>
-
-                    </td>
-
-
-                    <td>
-
-                        <button
-                            class="
-                                btn-action
-                                btn-delete
-                            "
-                            onclick="
-                                deleteAsset(${index})
-                            "
-                        >
-                            🗑️ Sil
-                        </button>
-
-                    </td>
-                `;
-
-
-                list.appendChild(row);
-            }
+    const symbolInput =
+        document.getElementById(
+            "symbol"
         );
 
 
-        /*
-         * TOPLAM HESAPLAR
-         */
-
-        const totalProfit =
-            totalVal -
-            totalCst;
-
-
-        const totalRatio =
-            totalCst > 0
-                ? (totalProfit / totalCst) * 100
-                : 0;
-
-
+    const amountInput =
         document.getElementById(
-            'totalValue'
-        ).innerText =
-            `₺${totalVal.toLocaleString(
-                'tr-TR',
-                {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }
-            )}`;
+            "amount"
+        );
 
 
+    const avgCostInput =
         document.getElementById(
-            'totalCost'
-        ).innerText =
-            `₺${totalCst.toLocaleString(
-                'tr-TR',
-                {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }
-            )}`;
+            "avgCost"
+        );
 
 
-        const profitEl =
-            document.getElementById(
-                'totalProfit'
-            );
+    const symbol =
+        symbolInput.value
+            .trim()
+            .toUpperCase();
 
 
-        profitEl.innerText =
-            `₺${totalProfit.toLocaleString(
-                'tr-TR',
-                {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                }
-            )}`;
+    const amount =
+        parseNum(
+            amountInput.value
+        );
 
 
-        profitEl.className =
-            `card-value ${
-                totalProfit >= 0
-                    ? 'positive'
-                    : 'negative'
-            }`;
+    const avgCost =
+        parseNum(
+            avgCostInput.value
+        );
 
 
-        const ratioEl =
-            document.getElementById(
-                'totalProfitRatio'
-            );
+    if (
+        !symbol ||
+        amount <= 0 ||
+        avgCost <= 0
+    ) {
 
+        alert(
+            "Lütfen Hisse Kodu, Adet ve Ort. Maliyet alanlarını doldurun."
+        );
 
-        ratioEl.innerText =
-            `%${totalRatio.toFixed(2)}`;
-
-
-        ratioEl.className =
-            `card-value ${
-                totalRatio >= 0
-                    ? 'positive'
-                    : 'negative'
-            }`;
+        return;
     }
 
 
     /*
-     * ============================================================
-     * SAYFA AÇILDIĞINDA
-     * ============================================================
+     * Hisse zaten var mı?
      */
+
+    const existingIndex =
+        assets.findIndex(
+            a =>
+                String(a.symbol)
+                .toUpperCase()
+                === symbol
+        );
+
+
+    if (
+        existingIndex >= 0
+    ) {
+
+        const existing =
+            assets[
+                existingIndex
+            ];
+
+
+        /*
+         * Ortalama maliyet hesabı
+         */
+
+        const oldCost =
+            Number(existing.amount) *
+            Number(existing.avgCost);
+
+
+        const newCost =
+            amount *
+            avgCost;
+
+
+        const totalAmount =
+            Number(existing.amount) +
+            amount;
+
+
+        existing.amount =
+            totalAmount;
+
+
+        existing.avgCost =
+            (
+                oldCost +
+                newCost
+            ) /
+            totalAmount;
+
+
+        /*
+         * Eğer toplu piyasa verisinde
+         * bu hisse zaten varsa fiyatını
+         * hemen kullan.
+         */
+
+        if (
+            marketPrices[symbol]
+        ) {
+
+            existing.currentPrice =
+                marketPrices[symbol];
+        }
+
+    } else {
+
+        /*
+         * Yeni hisse
+         *
+         * İlk fiyat olarak maliyeti
+         * kullanıyoruz.
+         *
+         * Daha sonra toplu güncelleme
+         * gerçek piyasa fiyatını yazacak.
+         */
+
+        assets.push({
+
+            symbol:
+                symbol,
+
+            amount:
+                amount,
+
+            avgCost:
+                avgCost,
+
+            currentPrice:
+                marketPrices[symbol]
+                || avgCost
+
+        });
+    }
+
+
+    /*
+     * Formu temizle
+     */
+
+    symbolInput.value =
+        "";
+
+
+    amountInput.value =
+        "";
+
+
+    avgCostInput.value =
+        "";
+
+
+    /*
+     * Kaydet
+     */
+
+    saveAssets();
+
 
     render();
 
 
-    /*
-     * Otomatik güncelleme kutusu varsayılan
-     * olarak açık.
-     *
-     * Sayfa açılır açılmaz timer başlıyor.
-     */
-
-    startAutoUpdate();
+    setMessage(
+        `${symbol} portföye eklendi.`,
+        "success"
+    );
+}
 
 
-    /*
-     * Sayfa açıldığında portföy boş değilse
-     * ilk fiyat güncellemesini de yap.
-     *
-     * Böylece kullanıcı 30 saniye beklemek
-     * zorunda kalmaz.
-     */
+/* ============================================================
+   HİSSE SİL
+============================================================ */
 
-    if (assets.length > 0) {
+function deleteAsset(
+    index
+) {
 
-        setTimeout(
-            () => {
-                fetchAllLivePrices();
-            },
-            1000
+    const symbol =
+        assets[index]
+            .symbol;
+
+
+    if (
+        confirm(
+            `${symbol} hissesini silmek istediğinize emin misiniz?`
+        )
+    ) {
+
+        assets.splice(
+            index,
+            1
+        );
+
+
+        saveAssets();
+
+
+        render();
+
+
+        setMessage(
+            `${symbol} portföyden silindi.`,
+            "success"
         );
     }
+}
+
+
+/* ============================================================
+   OTOMATİK GÜNCELLEME
+============================================================ */
+
+function startAutoUpdate() {
+
+    stopAutoUpdate();
+
+
+    autoUpdateTimer =
+        setInterval(
+            () => {
+
+                if (
+                    !isUpdating &&
+                    assets.length > 0
+                ) {
+
+                    fetchAllLivePrices();
+                }
+
+            },
+            AUTO_UPDATE_INTERVAL
+        );
+}
+
+
+function stopAutoUpdate() {
+
+    if (
+        autoUpdateTimer
+    ) {
+
+        clearInterval(
+            autoUpdateTimer
+        );
+
+
+        autoUpdateTimer =
+            null;
+    }
+}
+
+
+function toggleAutoUpdate() {
+
+    const checkbox =
+        document.getElementById(
+            "autoUpdate"
+        );
+
+
+    if (
+        checkbox.checked
+    ) {
+
+        startAutoUpdate();
+
+
+        setMessage(
+            "Otomatik güncelleme aktif. Her 30 saniyede toplu fiyat alınacak.",
+            "success"
+        );
+
+    } else {
+
+        stopAutoUpdate();
+
+
+        setMessage(
+            "Otomatik güncelleme kapatıldı.",
+            "warning"
+        );
+    }
+}
+
+
+/* ============================================================
+   TABLOYU ÇİZ
+============================================================ */
+
+function render() {
+
+    const list =
+        document.getElementById(
+            "assetList"
+        );
+
+
+    list.innerHTML =
+        "";
+
+
+    let totalValue =
+        0;
+
+
+    let totalCost =
+        0;
+
+
+    document.getElementById(
+        "portfolioCount"
+    ).innerText =
+        assets.length;
+
+
+    if (
+        assets.length === 0
+    ) {
+
+        list.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="8"
+                    style="
+                        text-align:center;
+                        color:var(--text-muted);
+                        padding:30px;
+                    "
+                >
+                    Henüz hisse eklenmedi.
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+
+    assets.forEach(
+        (asset, index) => {
+
+
+            const amount =
+                Number(
+                    asset.amount
+                ) || 0;
+
+
+            const avgCost =
+                Number(
+                    asset.avgCost
+                ) || 0;
+
+
+            const currentPrice =
+                Number(
+                    asset.currentPrice
+                ) || 0;
+
+
+            /*
+             * Hesaplar
+             */
+
+            const cost =
+                amount *
+                avgCost;
+
+
+            const value =
+                amount *
+                currentPrice;
+
+
+            const profit =
+                value -
+                cost;
+
+
+            const ratio =
+                cost > 0
+                    ? (
+                        profit /
+                        cost
+                    ) * 100
+                    : 0;
+
+
+            totalCost +=
+                cost;
+
+
+            totalValue +=
+                value;
+
+
+            const positive =
+                profit >= 0;
+
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.innerHTML = `
+
+                <td>
+
+                    <strong
+                        style="
+                            color:
+                            var(--accent-primary);
+                        "
+                    >
+                        ${asset.symbol}
+                    </strong>
+
+                </td>
+
+
+                <td>
+                    ${amount.toLocaleString(
+                        "tr-TR"
+                    )}
+                </td>
+
+
+                <td>
+                    ₺${avgCost.toLocaleString(
+                        "tr-TR",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    )}
+                </td>
+
+
+                <td>
+
+                    <input
+                        type="text"
+                        class="price-input"
+                        value="${currentPrice}"
+                        onchange="
+                            updateInlinePrice(
+                                ${index},
+                                this.value
+                            )
+                        "
+                    >
+
+                </td>
+
+
+                <td>
+                    ₺${value.toLocaleString(
+                        "tr-TR",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    )}
+                </td>
+
+
+                <td
+                    class="
+                        ${positive
+                            ? "positive"
+                            : "negative"
+                        }
+                    "
+                >
+                    ₺${profit.toLocaleString(
+                        "tr-TR",
+                        {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }
+                    )}
+                </td>
+
+
+                <td>
+
+                    <span
+                        class="
+                            badge
+                            ${positive
+                                ? "badge-positive"
+                                : "badge-negative"
+                            }
+                        "
+                    >
+                        %${ratio.toFixed(2)}
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    <button
+                        class="btn-delete"
+                        onclick="
+                            deleteAsset(
+                                ${index}
+                            )
+                        "
+                    >
+                        🗑️ Sil
+                    </button>
+
+                </td>
+
+            `;
+
+
+            list.appendChild(
+                row
+            );
+        }
+    );
+
+
+    /*
+     * Genel toplam
+     */
+
+    const totalProfit =
+        totalValue -
+        totalCost;
+
+
+    const totalRatio =
+        totalCost > 0
+            ? (
+                totalProfit /
+                totalCost
+            ) * 100
+            : 0;
+
+
+    document.getElementById(
+        "totalValue"
+    ).innerText =
+        `₺${totalValue.toLocaleString(
+            "tr-TR",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        )}`;
+
+
+    document.getElementById(
+        "totalCost"
+    ).innerText =
+        `₺${totalCost.toLocaleString(
+            "tr-TR",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        )}`;
+
+
+    const profitEl =
+        document.getElementById(
+            "totalProfit"
+        );
+
+
+    profitEl.innerText =
+        `₺${totalProfit.toLocaleString(
+            "tr-TR",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        )}`;
+
+
+    profitEl.className =
+        `card-value ${
+            totalProfit >= 0
+                ? "positive"
+                : "negative"
+        }`;
+
+
+    const ratioEl =
+        document.getElementById(
+            "totalProfitRatio"
+        );
+
+
+    ratioEl.innerText =
+        `%${totalRatio.toFixed(2)}`;
+
+
+    ratioEl.className =
+        `card-value ${
+            totalRatio >= 0
+                ? "positive"
+                : "negative"
+        }`;
+}
+
+
+/* ============================================================
+   BAŞLANGIÇ
+============================================================ */
+
+render();
+
+
+/*
+ * Portföy varsa açılışta bir kere güncelle.
+ */
+
+if (
+    assets.length > 0
+) {
+
+    setTimeout(
+        () => {
+
+            fetchAllLivePrices();
+
+        },
+        1000
+    );
+}
+
+
+/*
+ * Otomatik güncelleme başlat.
+ */
+
+startAutoUpdate();
 
 </script>
 
