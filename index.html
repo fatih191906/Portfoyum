@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v18</title>
+    <title>Portföyüm v19 (İş Yatırım Entegreli)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -98,7 +98,16 @@
             margin-bottom: 24px;
         }
 
-        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; }
+        .section-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .section-title { font-size: 1.1rem; font-weight: 600; }
 
         .form-grid {
             display: grid;
@@ -130,6 +139,19 @@
         }
 
         button.btn-primary:hover { background-color: var(--accent-hover); color: #fff; }
+
+        .btn-refresh {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-refresh:hover { background-color: var(--accent-primary); color: #0b0f19; }
 
         .table-container {
             overflow-x: auto;
@@ -186,49 +208,18 @@
             font-weight: 600;
             color: var(--accent-primary);
         }
-
-        .tradingview-widget-container {
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid var(--card-border);
-            margin-bottom: 20px;
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>Portföyüm v18 🚀</h1>
+        <h1>Portföyüm v19 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
-            <span>TradingView BİST Akışı Düzeltildi</span>
+            <span id="statusText">İş Yatırım Veri Servisi Hazır</span>
         </div>
     </header>
-
-    <!-- TRADINGVIEW DÜZELTİLMİŞ CANLI BİST BANT -->
-    <div class="tradingview-widget-container">
-        <div class="tradingview-widget-container__widget"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-        {
-        "symbols": [
-            { "description": "SASA", "proName": "BIST:SASA" },
-            { "description": "EREGL", "proName": "BIST:EREGL" },
-            { "description": "HEKTS", "proName": "BIST:HEKTS" },
-            { "description": "TERA", "proName": "BIST:TERA" },
-            { "description": "ASELS", "proName": "BIST:ASELS" },
-            { "description": "KOPOL", "proName": "BIST:KOPOL" },
-            { "description": "MANAS", "proName": "BIST:MANAS" },
-            { "description": "BIST 100", "proName": "BIST:XU100" }
-        ],
-        "showSymbolLogo": false,
-        "colorTheme": "dark",
-        "isTransparent": true,
-        "displayMode": "adaptive",
-        "locale": "tr"
-        }
-        </script>
-    </div>
 
     <!-- ÖZET KARTLARI -->
     <div class="grid-summary">
@@ -264,9 +255,12 @@
 
     <!-- PORTFÖY TABLOSU -->
     <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
-        <div style="padding: 0 20px 16px 20px;">
-            <div class="section-title" style="margin: 0;">Hisse Portföyü</div>
-            <small style="color: var(--text-muted);">Güncel Fiyat kutucuğuna anlık borsa fiyatını girip tıklayarak portföy değerinizi canlı güncelleyin.</small>
+        <div class="section-header-flex" style="padding: 0 20px;">
+            <div>
+                <div class="section-title" style="margin: 0;">Hisse Portföyü</div>
+                <small style="color: var(--text-muted);">Veriler İş Yatırım 15 dk gecikmeli canlı borsa servisinden çekilmektedir.</small>
+            </div>
+            <button class="btn-refresh" id="refreshBtn" onclick="fetchPricesFromIsYatirim()">🔄 İş Yatırım'dan Fiyatları Çek</button>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -304,7 +298,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v18";
+    document.title = "Portföyüm v19";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
@@ -317,6 +311,65 @@
         let clean = val.toString().replace(/\./g, '').replace(',', '.');
         let num = parseFloat(clean);
         return isNaN(num) ? 0 : num;
+    }
+
+    // İŞ YATIRIM VERİ ÇEKME MOTORU
+    async function fetchPricesFromIsYatirim() {
+        if (assets.length === 0) return;
+
+        const statusText = document.getElementById('statusText');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        statusText.innerText = "İş Yatırım sunucularına bağlanılıyor...";
+        refreshBtn.disabled = true;
+
+        let updatedCount = 0;
+
+        for (let i = 0; i < assets.length; i++) {
+            const sym = assets[i].symbol.trim().toUpperCase();
+            statusText.innerText = `İş Yatırım: ${sym} çekiliyor (${i+1}/${assets.length})`;
+
+            // İş Yatırım Resmi Web Servisi Endpoint'i
+            const isYatirimUrl = `https://www.isyatirim.com.tr/_layouts/15/IsYatirim.HisseKapanis.Web/Services/HisseKapanisService.aspx/GetHisseDetay?hisseKodu=${sym}`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(isYatirimUrl)}`;
+
+            try {
+                const response = await fetch(proxyUrl);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.contents) {
+                        const parsedBody = JSON.parse(data.contents);
+                        // İş Yatırım JSON Yanıtı Ayrıştırma
+                        let rawPrice = parsedBody?.d?.SonFiyat || parsedBody?.d?.KapanisFiyati || parsedBody?.d?.KAP_SON_FIYAT;
+                        
+                        if (!rawPrice && typeof data.contents === 'string') {
+                            // Alternatif regex tarama
+                            const match = data.contents.match(/"SonFiyat":\s*([0-9.,]+)/) || data.contents.match(/"KapanisFiyati":\s*([0-9.,]+)/);
+                            if (match && match[1]) rawPrice = match[1];
+                        }
+
+                        if (rawPrice) {
+                            let price = parseNum(rawPrice);
+                            if (price > 0) {
+                                assets[i].currentPrice = price;
+                                updatedCount++;
+                                saveAndRender();
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error(`İş Yatırım ${sym} hatası:`, e);
+            }
+        }
+
+        if (updatedCount > 0) {
+            statusText.innerText = `İş Yatırım Güncellendi: ${new Date().toLocaleTimeString('tr-TR')} (${updatedCount}/${assets.length})`;
+        } else {
+            statusText.innerText = "İş Yatırım yanıt vermedi. Fiyatları el ile girebilirsiniz.";
+        }
+
+        refreshBtn.disabled = false;
     }
 
     function updateInlinePrice(index, newPriceVal) {
@@ -371,6 +424,7 @@
         currentPriceInput.value = '';
 
         saveAndRender();
+        fetchPricesFromIsYatirim();
     }
 
     function deleteAsset(index) {
@@ -456,6 +510,7 @@
     }
 
     render();
+    fetchPricesFromIsYatirim();
 </script>
 
 </body>
