@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v23</title>
+    <title>Portföyüm v24</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -111,8 +111,12 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) 120px;
+            grid-template-columns: 1fr 1fr 1fr 120px;
             gap: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
         }
 
         input {
@@ -214,7 +218,7 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v23 🚀</h1>
+        <h1>Portföyüm v24 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
             <span id="statusText">Portföy Aktif</span>
@@ -241,14 +245,13 @@
         </div>
     </div>
 
-    <!-- VARLIK EKLEME FORMU -->
+    <!-- YENİ HİSSE EKLEME FORMU (Anlık fiyat kaldırıldı) -->
     <div class="section-card">
         <div class="section-title">Yeni Hisse Ekle</div>
         <div class="form-grid">
             <input type="text" id="symbol" placeholder="Hisse (Örn: SASA)" style="text-transform:uppercase">
             <input type="text" id="amount" placeholder="Adet (Örn: 1000)">
             <input type="text" id="avgCost" placeholder="Ort. Maliyet (₺)">
-            <input type="text" id="currentPriceInput" placeholder="Anlık Fiyat (₺)">
             <button type="button" class="btn-primary" onclick="addAsset()">Ekle</button>
         </div>
     </div>
@@ -258,7 +261,7 @@
         <div class="section-header-flex" style="padding: 0 20px;">
             <div>
                 <div class="section-title" style="margin: 0;">Hisse Portföyü</div>
-                <small style="color: var(--text-muted);">Fiyatları güncelleyerek tüm portföyü anında yenileyebilirsiniz.</small>
+                <small style="color: var(--text-muted);">Güncel fiyatları girip "Fiyatları Güncelle" butonuna basabilirsiniz.</small>
             </div>
             <button class="btn-refresh" id="refreshBtn" onclick="refreshPortfolioPrices()">🔄 Fiyatları Güncelle</button>
         </div>
@@ -298,12 +301,12 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v23";
+    document.title = "Portföyüm v24";
 
-    let assets = JSON.parse(localStorage.getItem('bist_assets_v23')) || [];
+    let assets = JSON.parse(localStorage.getItem('bist_assets_v24')) || [];
 
     function saveAndRender() {
-        localStorage.setItem('bist_assets_v23', JSON.stringify(assets));
+        localStorage.setItem('bist_assets_v24', JSON.stringify(assets));
         render();
     }
 
@@ -314,50 +317,41 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // Butona basıldığında tablodaki inputlardaki güncel fiyatları okur, kaydeder ve portföyü baştan hesaplar
+    // Fiyatları Güncelle butonuna basıldığında tablodaki inputları topluca alır ve kaydeder
     function refreshPortfolioPrices() {
-        const priceInputs = document.querySelectorAll('.price-input');
-        priceInputs.forEach((input, index) => {
-            let val = parseNum(input.value);
-            if (val >= 0) {
-                assets[index].currentPrice = val;
+        const rows = document.querySelectorAll('#assetList tr');
+        rows.forEach((row, index) => {
+            const input = row.querySelector('.price-input');
+            if (input) {
+                let val = parseNum(input.value);
+                if (val >= 0 && assets[index]) {
+                    assets[index].currentPrice = val;
+                }
             }
         });
 
         saveAndRender();
 
         const statusText = document.getElementById('statusText');
-        statusText.innerText = `Fiyatlar Güncellendi: ${new Date().toLocaleTimeString('tr-TR')}`;
+        statusText.innerText = `Güncellendi: ${new Date().toLocaleTimeString('tr-TR')}`;
         setTimeout(() => {
             statusText.innerText = "Portföy Aktif";
-        }, 2500);
-    }
-
-    function updateInlinePrice(index, newPriceVal) {
-        let price = parseNum(newPriceVal);
-        if (price >= 0) {
-            assets[index].currentPrice = price;
-            saveAndRender();
-        }
+        }, 2000);
     }
 
     function addAsset() {
         const symbolInput = document.getElementById('symbol');
         const amountInput = document.getElementById('amount');
         const avgCostInput = document.getElementById('avgCost');
-        const currentPriceInput = document.getElementById('currentPriceInput');
 
         const symbol = symbolInput.value.trim().toUpperCase();
         const newAmount = parseNum(amountInput.value);
         let newAvgCost = parseNum(avgCostInput.value);
-        let manualPrice = parseNum(currentPriceInput.value);
 
-        if (!symbol || newAmount <= 0) {
-            alert('Lütfen Hisse Kodu ve Adet girin.');
+        if (!symbol || newAmount <= 0 || newAvgCost <= 0) {
+            alert('Lütfen Hisse Kodu, Adet ve Ort. Maliyet alanlarını eksiksiz doldurun.');
             return;
         }
-
-        let initialPrice = manualPrice > 0 ? manualPrice : (newAvgCost > 0 ? newAvgCost : 0);
 
         const existingIndex = assets.findIndex(a => a.symbol === symbol);
 
@@ -368,22 +362,22 @@
             
             existing.amount = totalQty;
             existing.avgCost = totalCostSum / totalQty;
-            if (manualPrice > 0) {
-                existing.currentPrice = manualPrice;
+            // Mevcut güncel fiyatı koru, yoksa yeni maliyete eşitle
+            if (!existing.currentPrice || existing.currentPrice === 0) {
+                existing.currentPrice = existing.avgCost;
             }
         } else {
             assets.push({ 
                 symbol: symbol, 
                 amount: newAmount, 
                 avgCost: newAvgCost, 
-                currentPrice: initialPrice
+                currentPrice: newAvgCost // Yeni eklenince güncel fiyat otomatik maliyet olur
             });
         }
 
         symbolInput.value = '';
         amountInput.value = '';
         avgCostInput.value = '';
-        currentPriceInput.value = '';
 
         saveAndRender();
     }
@@ -423,7 +417,7 @@
                 <td>${item.amount.toLocaleString('tr-TR')}</td>
                 <td>₺${item.avgCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td>
-                    <input type="text" class="price-input" value="${item.currentPrice}" onchange="updateInlinePrice(${index}, this.value)">
+                    <input type="text" class="price-input" value="${item.currentPrice}">
                 </td>
                 <td>₺${itemVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td class="${isPos ? 'positive' : 'negative'}">₺${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
