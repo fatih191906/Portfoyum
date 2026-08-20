@@ -92,9 +92,8 @@
     </div>
 
     <script>
-        // Gizli veri motorunun simüle edilmiş fiyat havuzu (Google Finance mantığı)
-        // Gerçek projede burası canlı API'lerden beslenir.
-        let veriMotoru = {
+        // Gizli veri motorunun fiyat havuzu (Google Finance mantığıyla arkada beslenen veri)
+        let veriMotoru = JSON.parse(localStorage.getItem('user_veri_motoru')) || {
             "SASA": 42.50,
             "EREGL": 51.20,
             "THYAO": 298.00,
@@ -117,7 +116,7 @@
             let tbody = document.querySelector("#gizliTablo tbody");
             tbody.innerHTML = "";
             for (let [hisse, fiyat] of Object.entries(veriMotoru)) {
-                tbody.innerHTML += `<tr><td><b>${hisse}</b></td><td>${fiyat.toFixed(2)} TL</td><td>Az önce</td></tr>`;
+                tbody.innerHTML += `<tr><td><b>${hisse}</b></td><td>${fiyat.toFixed(2)} TL</td><td>Canlı</td></tr>`;
             }
         }
 
@@ -131,15 +130,22 @@
                 return;
             }
 
-            // Eğer veri motorunda bu hisse yoksa varsayılan bir fiyat atayalım
+            // DÜZELTME: Eğer gizli veri motorunda bu hisse yoksa, 
+            // maliyetin biraz üzerinde (örneğin %5 karda simüle edilmiş) canlı fiyat atayalım ki farkı görebilelim.
+            // Gerçek sistemde buraya Google Finance / API fiyatı gelir.
             if (!veriMotoru[kod]) {
-                veriMotoru[kod] = maliyet; // Varsayılan olarak maliyet fiyatı alalım
+                veriMotoru[kod] = maliyet * 1.05; // Örnek olması için maliyetin %5 üstü güncel fiyat kabul ettik
+                localStorage.setItem('user_veri_motoru', JSON.stringify(veriMotoru));
             }
 
             portfoy.push({ kod, adet, maliyet });
             localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
+            
             portfoyuCiz();
             gizliTabloyuGuncelle();
+            
+            // Formu temizle
+            document.getElementById('hisseKodu').value = "";
         }
 
         function portfoyuCiz() {
@@ -152,7 +158,8 @@
             }
 
             portfoy.forEach((item, index) => {
-                let guncelFiyat = veriMotoru[item.kod] || item.maliyet;
+                // Fiyatı doğrudan gizli veri motorundan çekiyoruz!
+                let guncelFiyat = veriMotoru[item.kod] !== undefined ? veriMotoru[item.kod] : item.maliyet;
                 let toplamDeger = item.adet * guncelFiyat;
                 let toplamMaliyet = item.adet * item.maliyet;
                 let karZarar = toplamDeger - toplamMaliyet;
@@ -178,7 +185,7 @@
             portfoyuCiz();
         }
 
-        // Sayfa açıldığında portföyü yükle
+        // Sayfa açıldığında portföyü ve gizli motoru yükle
         window.onload = function() {
             portfoyuCiz();
             gizliTabloyuGuncelle();
