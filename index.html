@@ -13,6 +13,7 @@
         .detay-satir { background-color: #f8f9fa !important; font-size: 0.85rem; }
         .btn-plus-minus { background: none; border: none; color: #198754; font-weight: bold; font-size: 1.1rem; padding: 0 6px; cursor: pointer; transition: transform 0.2s; }
         .btn-plus-minus:hover { transform: scale(1.2); }
+        .badge-kurum { font-size: 0.75rem; background-color: #e9ecef; color: #495057; border: 1px solid #ced4da; }
     </style>
 </head>
 <body>
@@ -54,6 +55,17 @@
                     <div class="mb-3">
                         <label class="form-label">Hisse Kodu</label>
                         <input type="text" id="hisseKodu" class="form-control" placeholder="Örn: SASA, EREGL">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kurum / Aracı Kurum</label>
+                        <select id="hisseKurum" class="form-select">
+                            <option value="Vakıf Yatırım">Vakıf Yatırım</option>
+                            <option value="İnfo Yatırım">İnfo Yatırım</option>
+                            <option value="Alnus Yatırım">Alnus Yatırım</option>
+                            <option value="Enpara">Enpara</option>
+                            <option value="Marbaş">Marbaş</option>
+                            <option value="Ziraat Bankası">Ziraat Bankası</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Adet</label>
@@ -118,10 +130,15 @@
                         if (!item.islemGecmisi) {
                             return {
                                 kod: item.kod || "BILINMIYOR",
-                                islemGecmisi: [{ adet: item.adet || 0, maliyet: item.maliyet || item.ortMaliyet || 0, tarih: "Geçmiş Alım" }],
+                                islemGecmisi: [{ adet: item.adet || 0, maliyet: item.maliyet || item.ortMaliyet || 0, kurum: "Diğer", tarih: "Geçmiş Alım" }],
                                 toplamAdet: item.adet || 0,
                                 ortMaliyet: item.maliyet || item.ortMaliyet || 0
                             };
+                        } else {
+                            // Eski kayıtlar için kurum bilgisi yoksa varsayılan atayalım
+                            item.islemGecmisi.forEach(islem => {
+                                if(!islem.kurum) islem.kurum = "Vakıf Yatırım";
+                            });
                         }
                         return item;
                     });
@@ -152,12 +169,14 @@
 
         function portfoyeEkle() {
             let kodInput = document.getElementById('hisseKodu');
+            let kurumInput = document.getElementById('hisseKurum');
             let adetInput = document.getElementById('hisseAdet');
             let maliyetInput = document.getElementById('hisseMaliyet');
 
-            if (!kodInput || !adetInput || !maliyetInput) return;
+            if (!kodInput || !adetInput || !maliyetInput || !kurumInput) return;
 
             let kod = kodInput.value.toUpperCase().trim();
+            let kurum = kurumInput.value;
             let adet = parseFloat(adetInput.value);
             let maliyet = parseFloat(maliyetInput.value);
 
@@ -172,7 +191,7 @@
             }
 
             let mevcutHisse = portfoy.find(item => item.kod === kod);
-            let yeniIslem = { adet: adet, maliyet: maliyet, tarih: new Date().toLocaleDateString() };
+            let yeniIslem = { adet: adet, maliyet: maliyet, kurum: kurum, tarih: new Date().toLocaleDateString() };
 
             if (mevcutHisse) {
                 if(!mevcutHisse.islemGecmisi) mevcutHisse.islemGecmisi = [];
@@ -226,7 +245,6 @@
                 let karZarar = toplamDeger - toplamMaliyetTutar;
                 let renkClass = karZarar >= 0 ? "text-success" : "text-danger";
 
-                // Eğer birden fazla alım yapıldıysa yeşil artı göster, tek alımsa boş bırak
                 let plusButton = "";
                 if (item.islemGecmisi && item.islemGecmisi.length > 1) {
                     plusButton = `<button type="button" class="btn-plus-minus" onclick="detayAcKapat(${index})" id="btn-detay-${index}">+</button>`;
@@ -256,8 +274,8 @@
                         let subRenk = subKarZarar >= 0 ? "text-success" : "text-danger";
 
                         subRowsHtml += `
-                            <tr class="text-muted">
-                                <td class="ps-4">↳ ${islem.tarih || 'İşlem'}</td>
+                            <tr class="text-muted align-middle">
+                                <td class="ps-4">↳ ${islem.tarih || 'İşlem'} <span class="badge badge-kurum ms-1">${islem.kurum || 'Vakıf Yatırım'}</span></td>
                                 <td><b>${islem.adet} Adet</b></td>
                                 <td>Maliyet: ${islem.maliyet.toFixed(2)} TL</td>
                                 <td>Fiyat: ${guncelFiyat.toFixed(2)} TL</td>
