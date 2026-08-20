@@ -10,7 +10,9 @@
         body { background-color: #f8f9fa; }
         .hidden-engine { display: none; } /* Gizli veri motoru alanı */
         .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .detay-satir { background-color: #f1f3f5 !important; font-size: 0.9rem; }
+        .detay-satir { background-color: #f8f9fa !important; font-size: 0.85rem; }
+        .btn-plus-minus { background: none; border: none; color: #198754; font-weight: bold; font-size: 1.1rem; padding: 0 6px; cursor: pointer; transition: transform 0.2s; }
+        .btn-plus-minus:hover { transform: scale(1.2); }
     </style>
 </head>
 <body>
@@ -73,7 +75,7 @@
                         <table class="table table-hover align-middle" id="portfoyTablosu">
                             <thead class="table-light">
                                 <tr>
-                                    <th></th>
+                                    <th style="width: 30px;"></th>
                                     <th>Hisse</th>
                                     <th>Toplam Adet</th>
                                     <th>Ort. Maliyet</th>
@@ -94,7 +96,6 @@
     </div>
 
     <script>
-        // Veri motoru başlatma
         let veriMotoru = {
             "SASA": 42.50,
             "EREGL": 51.20,
@@ -104,26 +105,20 @@
         
         try {
             let savedEngine = localStorage.getItem('user_veri_motoru');
-            if (savedEngine) {
-                veriMotoru = JSON.parse(savedEngine);
-            }
-        } catch(e) {
-            console.log("Veri motoru yüklenemedi, varsayılanlar kullanılıyor.");
-        }
+            if (savedEngine) veriMotoru = JSON.parse(savedEngine);
+        } catch(e) {}
 
-        // Portföy verisini güvenli bir şekilde yükleme
         let portfoy = [];
         try {
             let savedPortfoy = localStorage.getItem('user_portfoy');
             if (savedPortfoy) {
                 let parsed = JSON.parse(savedPortfoy);
-                // Eski veya bozuk verileri temizleyip normalize ediyoruz
                 if (Array.isArray(parsed)) {
                     portfoy = parsed.map(item => {
                         if (!item.islemGecmisi) {
                             return {
                                 kod: item.kod || "BILINMIYOR",
-                                islemGecmisi: [{ adet: item.adet || 0, maliyet: item.maliyet || item.ortMaliyet || 0, tarih: "Geçmiş" }],
+                                islemGecmisi: [{ adet: item.adet || 0, maliyet: item.maliyet || item.ortMaliyet || 0, tarih: "Geçmiş Alım" }],
                                 toplamAdet: item.adet || 0,
                                 ortMaliyet: item.maliyet || item.ortMaliyet || 0
                             };
@@ -133,7 +128,6 @@
                 }
             }
         } catch(e) {
-            console.log("Portföy hafızası sıfırlandı.");
             portfoy = [];
         }
 
@@ -161,10 +155,7 @@
             let adetInput = document.getElementById('hisseAdet');
             let maliyetInput = document.getElementById('hisseMaliyet');
 
-            if (!kodInput || !adetInput || !maliyetInput) {
-                alert("Form elementleri bulunamadı!");
-                return;
-            }
+            if (!kodInput || !adetInput || !maliyetInput) return;
 
             let kod = kodInput.value.toUpperCase().trim();
             let adet = parseFloat(adetInput.value);
@@ -176,10 +167,8 @@
             }
 
             if (!veriMotoru[kod]) {
-                veriMotoru[kod] = maliyet * 1.05; // Simüle edilmiş canlı fiyat
-                try {
-                    localStorage.setItem('user_veri_motoru', JSON.stringify(veriMotoru));
-                } catch(e) {}
+                veriMotoru[kod] = maliyet * 1.05; 
+                try { localStorage.setItem('user_veri_motoru', JSON.stringify(veriMotoru)); } catch(e) {}
             }
 
             let mevcutHisse = portfoy.find(item => item.kod === kod);
@@ -215,9 +204,7 @@
         }
 
         function kaydetVeGuncelle() {
-            try {
-                localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
-            } catch(e) {}
+            try { localStorage.setItem('user_portfoy', JSON.stringify(portfoy)); } catch(e) {}
             portfoyuCiz();
             gizliTabloyuGuncelle();
         }
@@ -239,10 +226,16 @@
                 let karZarar = toplamDeger - toplamMaliyetTutar;
                 let renkClass = karZarar >= 0 ? "text-success" : "text-danger";
 
+                // Eğer birden fazla alım yapıldıysa yeşil artı göster, tek alımsa boş bırak
+                let plusButton = "";
+                if (item.islemGecmisi && item.islemGecmisi.length > 1) {
+                    plusButton = `<button type="button" class="btn-plus-minus" onclick="detayAcKapat(${index})" id="btn-detay-${index}">+</button>`;
+                }
+
                 // Ana Satır
                 tbody.innerHTML += `
                     <tr>
-                        <td><button type="button" class="btn btn-sm btn-outline-primary" onclick="detayAcKapat(${index})" id="btn-detay-${index}">➕</button></td>
+                        <td class="text-center">${plusButton}</td>
                         <td><b>${item.kod}</b></td>
                         <td>${item.toplamAdet}</td>
                         <td>${item.ortMaliyet.toFixed(2)} TL</td>
@@ -251,26 +244,40 @@
                         <td class="${renkClass} fw-bold">${karZarar.toFixed(2)} TL</td>
                         <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="hisseSil(${index})">Sil</button></td>
                     </tr>
-                    <tr id="detay-row-${index}" style="display: none;" class="detay-satir">
-                        <td colspan="8">
-                            <div class="p-2">
-                                <strong>İşlem Geçmişi (${item.kod}):</strong>
-                                <ul class="mb-0 mt-1 ps-3" id="gecmis-list-${index}">
-                                    <!-- Alt işlemler buraya doldurulacak -->
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>
                 `;
-            });
 
-            // Alt listeleri doldur
-            portfoy.forEach((item, index) => {
-                let ul = document.getElementById(`gecmis-list-${index}`);
-                if(ul && item.islemGecmisi) {
+                // Eğer birden fazla alım varsa açılacak alt detay satırı
+                if (item.islemGecmisi && item.islemGecmisi.length > 1) {
+                    let subRowsHtml = "";
                     item.islemGecmisi.forEach((islem, i) => {
-                        ul.innerHTML += `<li>${islem.tarih || 'İşlem'} - <b>${islem.adet} Adet</b> | Birim Maliyet: <b>${islem.maliyet.toFixed(2)} TL</b> <button type="button" class="btn btn-link text-danger p-0 ms-2 text-decoration-none fw-bold" onclick="islemSil(${index}, ${i})" title="Bu alımı sil">✖</button></li>`;
+                        let subDeger = islem.adet * guncelFiyat;
+                        let subMaliyetTutar = islem.adet * islem.maliyet;
+                        let subKarZarar = subDeger - subMaliyetTutar;
+                        let subRenk = subKarZarar >= 0 ? "text-success" : "text-danger";
+
+                        subRowsHtml += `
+                            <tr class="text-muted">
+                                <td class="ps-4">↳ ${islem.tarih || 'İşlem'}</td>
+                                <td><b>${islem.adet} Adet</b></td>
+                                <td>Maliyet: ${islem.maliyet.toFixed(2)} TL</td>
+                                <td>Fiyat: ${guncelFiyat.toFixed(2)} TL</td>
+                                <td>Değer: ${subDeger.toFixed(2)} TL</td>
+                                <td colspan="2" class="${subRenk} fw-bold">K/Z: ${subKarZarar.toFixed(2)} TL</td>
+                                <td><button type="button" class="btn btn-link text-danger p-0 text-decoration-none fw-bold" onclick="islemSil(${index}, ${i})" title="Bu alımı sil">✖</button></td>
+                            </tr>
+                        `;
                     });
+
+                    tbody.innerHTML += `
+                        <tr id="detay-row-${index}" style="display: none;" class="detay-satir">
+                            <td colspan="8" class="p-2">
+                                <div class="ms-3 text-secondary small fw-bold mb-1">🔍 ${item.kod} - Alım Geçmişi Detayları:</div>
+                                <table class="table table-sm mb-0 bg-transparent">
+                                    <tbody>${subRowsHtml}</tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    `;
                 }
             });
         }
@@ -281,14 +288,10 @@
             if(!row || !btn) return;
             if (row.style.display === "none") {
                 row.style.display = "table-row";
-                btn.innerText = "➖";
-                btn.classList.remove("btn-outline-primary");
-                btn.classList.add("btn-primary");
+                btn.innerText = "-";
             } else {
                 row.style.display = "none";
-                btn.innerText = "➕";
-                btn.classList.remove("btn-primary");
-                btn.classList.add("btn-outline-primary");
+                btn.innerText = "+";
             }
         }
 
