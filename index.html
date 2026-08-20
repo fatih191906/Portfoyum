@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v4</title>
+    <title>Portföyüm v5</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -183,7 +183,7 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v4</h1>
+        <h1>Portföyüm v5</h1>
         <div class="live-status" id="statusBadge">
             <span class="pulse-dot"></span> Canlı Veri Servisi
         </div>
@@ -259,7 +259,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v4";
+    document.title = "Portföyüm v5";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
@@ -274,32 +274,46 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // Çift Kaynaklı Canlı Fiyat Çekici
+    // 3 KADEMELİ CANLI FİYAT SERVİSİ
     async function fetchPriceFromBist(symbol) {
         const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
-        
-        // 1. Yöntem: Yahoo Finance Direct Proxy
+
+        // 1. Kaynak: Bigpara / Hürriyet API
         try {
-            const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS`;
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-            
-            const res = await fetch(proxyUrl);
-            if (res.ok) {
-                const data = await res.json();
-                const parsed = JSON.parse(data.contents);
-                const price = parsed.chart.result[0].meta.regularMarketPrice;
-                if (price && price > 0) return price;
+            const url1 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://bigpara.hurriyet.com.tr/api/v1/hisse/detay/' + cleanSymbol)}`;
+            const res1 = await fetch(url1);
+            if (res1.ok) {
+                const data1 = await res1.json();
+                const parsed = JSON.parse(data1.contents);
+                if (parsed && parsed.data && parsed.data.kapanis) {
+                    return parseFloat(parsed.data.kapanis);
+                }
             }
         } catch (e) {}
 
-        // 2. Yöntem: Yedek CORS Proxy
+        // 2. Kaynak: Google Finance Scraping Proxy
         try {
-            const backupUrl = `https://corsproxy.io/?${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + cleanSymbol + '.IS')}`;
-            const res2 = await fetch(backupUrl);
+            const url2 = `https://api.allorigins.win/get?url=${encodeURIComponent('https://www.google.com/finance/quote/' + cleanSymbol + ':IST')}`;
+            const res2 = await fetch(url2);
             if (res2.ok) {
                 const data2 = await res2.json();
-                const price2 = data2.chart.result[0].meta.regularMarketPrice;
-                if (price2 && price2 > 0) return price2;
+                const match = data2.contents.match(/data-last-price="([0-9.]+)"/);
+                if (match && match[1]) {
+                    return parseFloat(match[1]);
+                }
+            }
+        } catch (e) {}
+
+        // 3. Kaynak: Yahoo Direct
+        try {
+            const url3 = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS`;
+            const proxy3 = `https://api.allorigins.win/get?url=${encodeURIComponent(url3)}`;
+            const res3 = await fetch(proxy3);
+            if (res3.ok) {
+                const data3 = await res3.json();
+                const parsed3 = JSON.parse(data3.contents);
+                const price3 = parsed3.chart.result[0].meta.regularMarketPrice;
+                if (price3 && price3 > 0) return price3;
             }
         } catch (e) {}
 
@@ -365,9 +379,8 @@
         let hasUpdate = false;
         for (let item of assets) {
             const livePrice = await fetchPriceFromBist(item.symbol);
-            if (livePrice && livePrice !== item.currentPrice) {
+            if (livePrice && livePrice > 0 && livePrice !== item.currentPrice) {
                 item.currentPrice = livePrice;
-                if (item.avgCost === 0) item.avgCost = livePrice;
                 hasUpdate = true;
             }
         }
