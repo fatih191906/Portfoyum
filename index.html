@@ -61,7 +61,7 @@
                         <label class="form-label">Birim Maliyet (TL)</label>
                         <input type="number" id="hisseMaliyet" class="form-control" step="0.01" value="10.00">
                     </div>
-                    <button class="btn btn-primary w-100" onclick="portfoyeEkle()">Alım Ekle</button>
+                    <button type="button" class="btn btn-primary w-100" onclick="portfoyeEkle()">Alım Ekle</button>
                 </div>
             </div>
 
@@ -94,14 +94,48 @@
     </div>
 
     <script>
-        let veriMotoru = JSON.parse(localStorage.getItem('user_veri_motoru')) || {
+        // Veri motoru başlatma
+        let veriMotoru = {
             "SASA": 42.50,
             "EREGL": 51.20,
             "THYAO": 298.00,
             "GARAN": 95.40
         };
+        
+        try {
+            let savedEngine = localStorage.getItem('user_veri_motoru');
+            if (savedEngine) {
+                veriMotoru = JSON.parse(savedEngine);
+            }
+        } catch(e) {
+            console.log("Veri motoru yüklenemedi, varsayılanlar kullanılıyor.");
+        }
 
-        let portfoy = JSON.parse(localStorage.getItem('user_portfoy')) || [];
+        // Portföy verisini güvenli bir şekilde yükleme
+        let portfoy = [];
+        try {
+            let savedPortfoy = localStorage.getItem('user_portfoy');
+            if (savedPortfoy) {
+                let parsed = JSON.parse(savedPortfoy);
+                // Eski veya bozuk verileri temizleyip normalize ediyoruz
+                if (Array.isArray(parsed)) {
+                    portfoy = parsed.map(item => {
+                        if (!item.islemGecmisi) {
+                            return {
+                                kod: item.kod || "BILINMIYOR",
+                                islemGecmisi: [{ adet: item.adet || 0, maliyet: item.maliyet || item.ortMaliyet || 0, tarih: "Geçmiş" }],
+                                toplamAdet: item.adet || 0,
+                                ortMaliyet: item.maliyet || item.ortMaliyet || 0
+                            };
+                        }
+                        return item;
+                    });
+                }
+            }
+        } catch(e) {
+            console.log("Portföy hafızası sıfırlandı.");
+            portfoy = [];
+        }
 
         function toggleEngine() {
             let engine = document.getElementById('engineSection');
@@ -115,6 +149,7 @@
 
         function gizliTabloyuGuncelle() {
             let tbody = document.querySelector("#gizliTablo tbody");
+            if(!tbody) return;
             tbody.innerHTML = "";
             for (let [hisse, fiyat] of Object.entries(veriMotoru)) {
                 tbody.innerHTML += `<tr><td><b>${hisse}</b></td><td>${fiyat.toFixed(2)} TL</td><td>Canlı</td></tr>`;
@@ -122,24 +157,36 @@
         }
 
         function portfoyeEkle() {
-            let kod = document.getElementById('hisseKodu').value.toUpperCase().trim();
-            let adet = parseFloat(document.getElementById('hisseAdet').value);
-            let maliyet = parseFloat(document.getElementById('hisseMaliyet').value);
+            let kodInput = document.getElementById('hisseKodu');
+            let adetInput = document.getElementById('hisseAdet');
+            let maliyetInput = document.getElementById('hisseMaliyet');
 
-            if (!kod || isNaN(adet) || isNaN(maliyet)) {
-                alert("Lütfen tüm alanları eksiksiz doldurun!");
+            if (!kodInput || !adetInput || !maliyetInput) {
+                alert("Form elementleri bulunamadı!");
+                return;
+            }
+
+            let kod = kodInput.value.toUpperCase().trim();
+            let adet = parseFloat(adetInput.value);
+            let maliyet = parseFloat(maliyetInput.value);
+
+            if (!kod || isNaN(adet) || isNaN(maliyet) || adet <= 0 || maliyet <= 0) {
+                alert("Lütfen geçerli bir hisse kodu, adet ve maliyet girin!");
                 return;
             }
 
             if (!veriMotoru[kod]) {
                 veriMotoru[kod] = maliyet * 1.05; // Simüle edilmiş canlı fiyat
-                localStorage.setItem('user_veri_motoru', JSON.stringify(veriMotoru));
+                try {
+                    localStorage.setItem('user_veri_motoru', JSON.stringify(veriMotoru));
+                } catch(e) {}
             }
 
             let mevcutHisse = portfoy.find(item => item.kod === kod);
             let yeniIslem = { adet: adet, maliyet: maliyet, tarih: new Date().toLocaleDateString() };
 
             if (mevcutHisse) {
+                if(!mevcutHisse.islemGecmisi) mevcutHisse.islemGecmisi = [];
                 mevcutHisse.islemGecmisi.push(yeniIslem);
                 hesaplaOrtalama(mevcutHisse);
             } else {
@@ -151,10 +198,9 @@
                 });
             }
 
-            localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
-            portfoyuCiz();
-            gizliTabloyuGuncelle();
-            document.getElementById('hisseKodu').value = "";
+            kaydetVeGuncelle();
+            kodInput.value = "";
+            adetInput.value = "100";
         }
 
         function hesaplaOrtalama(hisseObj) {
@@ -165,14 +211,23 @@
                 toplamAdet += islem.adet;
             });
             hisseObj.toplamAdet = toplamAdet;
-            hisseObj.ortMaliyet = toplamMaliyetTutar / toplamAdet;
+            hisseObj.ortMaliyet = toplamAdet > 0 ? (toplamMaliyetTutar / toplamAdet) : 0;
+        }
+
+        function kaydetVeGuncelle() {
+            try {
+                localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
+            } catch(e) {}
+            portfoyuCiz();
+            gizliTabloyuGuncelle();
         }
 
         function portfoyuCiz() {
             let tbody = document.querySelector("#portfoyTablosu tbody");
+            if(!tbody) return;
             tbody.innerHTML = "";
 
-            if (portfoy.length === 0) {
+            if (!portfoy || portfoy.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Henüz portföyünüze eklenmiş bir hisse yok.</td></tr>`;
                 return;
             }
@@ -187,14 +242,14 @@
                 // Ana Satır
                 tbody.innerHTML += `
                     <tr>
-                        <td><button class="btn btn-sm btn-outline-primary" onclick="detayAcKapat(${index})" id="btn-detay-${index}">➕</button></td>
+                        <td><button type="button" class="btn btn-sm btn-outline-primary" onclick="detayAcKapat(${index})" id="btn-detay-${index}">➕</button></td>
                         <td><b>${item.kod}</b></td>
                         <td>${item.toplamAdet}</td>
                         <td>${item.ortMaliyet.toFixed(2)} TL</td>
                         <td>${guncelFiyat.toFixed(2)} TL</td>
                         <td>${toplamDeger.toFixed(2)} TL</td>
                         <td class="${renkClass} fw-bold">${karZarar.toFixed(2)} TL</td>
-                        <td><button class="btn btn-sm btn-outline-danger" onclick="hisseSil(${index})">Sil</button></td>
+                        <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="hisseSil(${index})">Sil</button></td>
                     </tr>
                     <tr id="detay-row-${index}" style="display: none;" class="detay-satir">
                         <td colspan="8">
@@ -212,9 +267,9 @@
             // Alt listeleri doldur
             portfoy.forEach((item, index) => {
                 let ul = document.getElementById(`gecmis-list-${index}`);
-                if(ul) {
+                if(ul && item.islemGecmisi) {
                     item.islemGecmisi.forEach((islem, i) => {
-                        ul.innerHTML += `<li>${islem.tarih} - <b>${islem.adet} Adet</b> | Birim Maliyet: <b>${islem.maliyet.toFixed(2)} TL</b> <button class="btn btn-link text-danger p-0 ms-2 text-decoration-none fw-bold" onclick="islemSil(${index}, ${i})" title="Bu alımı sil">✖</button></li>`;
+                        ul.innerHTML += `<li>${islem.tarih || 'İşlem'} - <b>${islem.adet} Adet</b> | Birim Maliyet: <b>${islem.maliyet.toFixed(2)} TL</b> <button type="button" class="btn btn-link text-danger p-0 ms-2 text-decoration-none fw-bold" onclick="islemSil(${index}, ${i})" title="Bu alımı sil">✖</button></li>`;
                     });
                 }
             });
@@ -223,6 +278,7 @@
         function detayAcKapat(index) {
             let row = document.getElementById(`detay-row-${index}`);
             let btn = document.getElementById(`btn-detay-${index}`);
+            if(!row || !btn) return;
             if (row.style.display === "none") {
                 row.style.display = "table-row";
                 btn.innerText = "➖";
@@ -237,20 +293,20 @@
         }
 
         function islemSil(hisseIndex, islemIndex) {
-            portfoy[hisseIndex].islemGecmisi.splice(islemIndex, 1);
-            if (portfoy[hisseIndex].islemGecmisi.length === 0) {
-                portfoy.splice(hisseIndex, 1);
-            } else {
-                hesaplaOrtalama(portfoy[hisseIndex]);
+            if(portfoy[hisseIndex] && portfoy[hisseIndex].islemGecmisi) {
+                portfoy[hisseIndex].islemGecmisi.splice(islemIndex, 1);
+                if (portfoy[hisseIndex].islemGecmisi.length === 0) {
+                    portfoy.splice(hisseIndex, 1);
+                } else {
+                    hesaplaOrtalama(portfoy[hisseIndex]);
+                }
+                kaydetVeGuncelle();
             }
-            localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
-            portfoyuCiz();
         }
 
         function hisseSil(index) {
             portfoy.splice(index, 1);
-            localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
-            portfoyuCiz();
+            kaydetVeGuncelle();
         }
 
         window.onload = function() {
