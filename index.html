@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v22</title>
+    <title>Portföyüm v23</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -214,7 +214,7 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v22 🚀</h1>
+        <h1>Portföyüm v23 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
             <span id="statusText">Portföy Aktif</span>
@@ -258,9 +258,9 @@
         <div class="section-header-flex" style="padding: 0 20px;">
             <div>
                 <div class="section-title" style="margin: 0;">Hisse Portföyü</div>
-                <small style="color: var(--text-muted);">Güncel fiyatlar tabloda saklanır ve anlık hesaplanır.</small>
+                <small style="color: var(--text-muted);">Fiyatları güncelleyerek tüm portföyü anında yenileyebilirsiniz.</small>
             </div>
-            <button class="btn-refresh" id="refreshBtn" onclick="triggerRefresh()">🔄 Fiyatları Güncelle</button>
+            <button class="btn-refresh" id="refreshBtn" onclick="refreshPortfolioPrices()">🔄 Fiyatları Güncelle</button>
         </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
@@ -298,12 +298,12 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v22";
+    document.title = "Portföyüm v23";
 
-    let assets = JSON.parse(localStorage.getItem('bist_assets_v22')) || [];
+    let assets = JSON.parse(localStorage.getItem('bist_assets_v23')) || [];
 
     function saveAndRender() {
-        localStorage.setItem('bist_assets_v22', JSON.stringify(assets));
+        localStorage.setItem('bist_assets_v23', JSON.stringify(assets));
         render();
     }
 
@@ -314,13 +314,23 @@
         return isNaN(num) ? 0 : num;
     }
 
-    function triggerRefresh() {
+    // Butona basıldığında tablodaki inputlardaki güncel fiyatları okur, kaydeder ve portföyü baştan hesaplar
+    function refreshPortfolioPrices() {
+        const priceInputs = document.querySelectorAll('.price-input');
+        priceInputs.forEach((input, index) => {
+            let val = parseNum(input.value);
+            if (val >= 0) {
+                assets[index].currentPrice = val;
+            }
+        });
+
+        saveAndRender();
+
         const statusText = document.getElementById('statusText');
-        statusText.innerText = `Güncellendi: ${new Date().toLocaleTimeString('tr-TR')}`;
+        statusText.innerText = `Fiyatlar Güncellendi: ${new Date().toLocaleTimeString('tr-TR')}`;
         setTimeout(() => {
             statusText.innerText = "Portföy Aktif";
-        }, 2000);
-        render();
+        }, 2500);
     }
 
     function updateInlinePrice(index, newPriceVal) {
@@ -347,7 +357,6 @@
             return;
         }
 
-        // Eğer anlık fiyat kutusuna bir şey yazılmadıysa, ortalama maliyeti baz al (veya daha önce eklediyse son fiyatı koru)
         let initialPrice = manualPrice > 0 ? manualPrice : (newAvgCost > 0 ? newAvgCost : 0);
 
         const existingIndex = assets.findIndex(a => a.symbol === symbol);
