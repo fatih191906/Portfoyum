@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföy Takip & Maliyet Hesaplayıcı</title>
+    <title>BİST Portföy Takip (Otomatik Canlı Fiyat)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -20,11 +20,7 @@
             --red-text: #f87171;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -34,10 +30,7 @@
             line-height: 1.5;
         }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1100px; margin: 0 auto; }
 
         header {
             margin-bottom: 24px;
@@ -46,12 +39,31 @@
             align-items: center;
             border-bottom: 1px solid var(--card-border);
             padding-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
-        header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent-primary);
+        header h1 { font-size: 1.5rem; font-weight: 700; color: var(--accent-primary); }
+
+        .live-status {
+            font-size: 0.85rem;
+            color: var(--green-text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--green-bg);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--green-text);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--green-text);
         }
 
         .grid-summary {
@@ -66,11 +78,6 @@
             border: 1px solid var(--card-border);
             border-radius: 12px;
             padding: 20px;
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-
-        .card:hover {
-            border-color: #3b82f6;
         }
 
         .card-title {
@@ -78,14 +85,10 @@
             font-weight: 600;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
             margin-bottom: 6px;
         }
 
-        .card-value {
-            font-size: 1.6rem;
-            font-weight: 700;
-        }
+        .card-value { font-size: 1.6rem; font-weight: 700; }
 
         .section-card {
             background-color: var(--card-bg);
@@ -95,16 +98,11 @@
             margin-bottom: 24px;
         }
 
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: var(--text-main);
-        }
+        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) 120px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 130px;
             gap: 12px;
         }
 
@@ -116,12 +114,9 @@
             border-radius: 8px;
             font-size: 0.9rem;
             outline: none;
-            transition: border-color 0.2s;
         }
 
-        input:focus {
-            border-color: var(--accent-primary);
-        }
+        input:focus { border-color: var(--accent-primary); }
 
         button.btn-primary {
             background-color: var(--accent-primary);
@@ -131,13 +126,9 @@
             padding: 10px 16px;
             border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.2s;
         }
 
-        button.btn-primary:hover {
-            background-color: var(--accent-hover);
-            color: #fff;
-        }
+        button.btn-primary:hover { background-color: var(--accent-hover); color: #fff; }
 
         .table-container {
             overflow-x: auto;
@@ -146,55 +137,13 @@
             background-color: var(--card-bg);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.9rem;
-        }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        th { background-color: #111827; color: var(--text-muted); padding: 14px 16px; border-bottom: 1px solid var(--card-border); font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 14px 16px; border-bottom: 1px solid var(--card-border); }
 
-        th {
-            background-color: #111827;
-            color: var(--text-muted);
-            font-weight: 600;
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--card-border);
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-        }
-
-        td {
-            padding: 14px 16px;
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background-color: rgba(255, 255, 255, 0.02);
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .badge-positive {
-            background-color: var(--green-bg);
-            color: var(--green-text);
-        }
-
-        .badge-negative {
-            background-color: var(--red-bg);
-            color: var(--red-text);
-        }
-
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
+        .badge-positive { background-color: var(--green-bg); color: var(--green-text); }
+        .badge-negative { background-color: var(--red-bg); color: var(--red-text); }
         .positive { color: var(--green-text); }
         .negative { color: var(--red-text); }
 
@@ -205,14 +154,9 @@
             padding: 6px 10px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.8rem;
-            transition: all 0.2s;
         }
 
-        .btn-delete:hover {
-            background-color: var(--red-bg);
-            border-color: var(--red-text);
-        }
+        .btn-delete:hover { background-color: var(--red-bg); }
 
         .calc-grid {
             display: grid;
@@ -229,19 +173,16 @@
             font-weight: 600;
             color: var(--accent-primary);
         }
-
-        @media (max-width: 600px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>Portföy Takip Platformu</h1>
+        <h1>BİST Portföy Takip</h1>
+        <div class="live-status">
+            <span class="pulse-dot"></span> Canlı Otomatik Güncelleme (30s)
+        </div>
     </header>
 
     <!-- ÖZET KARTLARI -->
@@ -266,13 +207,12 @@
 
     <!-- VARLIK EKLEME FORMU -->
     <div class="section-card">
-        <div class="section-title">Yeni Varlık Ekle</div>
+        <div class="section-title">Yeni BİST Hissesi Ekle</div>
         <div class="form-grid">
-            <input type="text" id="symbol" placeholder="Hisse/Fon Kodu (Örn: SASA)" style="text-transform:uppercase">
+            <input type="text" id="symbol" placeholder="Hisse Kodu (Örn: SASA)" style="text-transform:uppercase">
             <input type="number" id="amount" placeholder="Adet" step="any">
-            <input type="number" id="avgCost" placeholder="Maliyet (₺)" step="any">
-            <input type="number" id="currentPrice" placeholder="Güncel Fiyat (₺)" step="any">
-            <button class="btn-primary" onclick="addAsset()">Ekle</button>
+            <input type="number" id="avgCost" placeholder="Ort. Maliyet (₺)" step="any">
+            <button class="btn-primary" onclick="addAsset()">Hisse Ekle</button>
         </div>
     </div>
 
@@ -282,7 +222,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Kod</th>
+                        <th>Hisse</th>
                         <th>Adet</th>
                         <th>Ort. Maliyet</th>
                         <th>Güncel Fiyat</th>
@@ -293,7 +233,7 @@
                     </tr>
                 </thead>
                 <tbody id="assetList">
-                    <!-- Veriler dinamik eklenecek -->
+                    <!-- Dinamik İçerik -->
                 </tbody>
             </table>
         </div>
@@ -315,31 +255,57 @@
 </div>
 
 <script>
-    let assets = JSON.parse(localStorage.getItem('my_assets')) || [];
+    let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
-        localStorage.setItem('my_assets', JSON.stringify(assets));
+        localStorage.setItem('bist_assets', JSON.stringify(assets));
         render();
     }
 
-    function addAsset() {
-        const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+    async function fetchPriceFromBist(symbol) {
+        try {
+            const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
+            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS`;
+            const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+            const data = await response.json();
+            const price = data.chart.result[0].meta.regularMarketPrice;
+            return price || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function addAsset() {
+        const symbol = document.getElementById('symbol').value.trim().toUpperCase().replace('.IS', '');
         const amount = parseFloat(document.getElementById('amount').value);
         const avgCost = parseFloat(document.getElementById('avgCost').value);
-        const currentPrice = parseFloat(document.getElementById('currentPrice').value);
 
-        if (!symbol || isNaN(amount) || isNaN(avgCost) || isNaN(currentPrice)) {
-            alert('Lütfen tüm alanları geçerli değerlerle doldurun.');
+        if (!symbol || isNaN(amount) || isNaN(avgCost)) {
+            alert('Lütfen Hisse Kodu, Adet ve Ortalama Maliyet alanlarını doldurun.');
             return;
         }
 
+        const fetchedPrice = await fetchPriceFromBist(symbol);
+        const currentPrice = fetchedPrice ? fetchedPrice : avgCost;
+
         assets.push({ symbol, amount, avgCost, currentPrice });
-        
+
         document.getElementById('symbol').value = '';
         document.getElementById('amount').value = '';
         document.getElementById('avgCost').value = '';
-        document.getElementById('currentPrice').value = '';
 
+        saveAndRender();
+    }
+
+    async function fetchLivePrices() {
+        if (assets.length === 0) return;
+        
+        for (let item of assets) {
+            const livePrice = await fetchPriceFromBist(item.symbol);
+            if (livePrice) {
+                item.currentPrice = livePrice;
+            }
+        }
         saveAndRender();
     }
 
@@ -356,7 +322,7 @@
         let totalCst = 0;
 
         if (assets.length === 0) {
-            list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Henüz eklenmiş bir varlık bulunmuyor.</td></tr>`;
+            list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Henüz hisse eklenmedi.</td></tr>`;
         }
 
         assets.forEach((item, index) => {
@@ -418,6 +384,10 @@
     }
 
     render();
+    fetchLivePrices();
+
+    // 30 saniyede bir fiyatları arka planda otomatik güncelle
+    setInterval(fetchLivePrices, 30000);
 </script>
 
 </body>
