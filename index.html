@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v27</title>
+    <title>Portföyüm v29</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -189,17 +189,6 @@
         .btn-delete { color: var(--red-text); }
         .btn-delete:hover { background-color: var(--red-bg); }
 
-        .price-input {
-            width: 100px;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            text-align: right;
-            border: 1px solid var(--card-border);
-            background-color: var(--bg-color);
-            color: var(--text-main);
-        }
-
         .calc-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -221,7 +210,7 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v27 🚀</h1>
+        <h1>Portföyüm v29 🚀</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> 
             <span id="statusText">Portföy Aktif</span>
@@ -301,12 +290,12 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v27";
+    document.title = "Portföyüm v29";
 
-    let assets = JSON.parse(localStorage.getItem('bist_assets_v27')) || [];
+    let assets = JSON.parse(localStorage.getItem('bist_assets_v29')) || [];
 
     function saveAndRender() {
-        localStorage.setItem('bist_assets_v27', JSON.stringify(assets));
+        localStorage.setItem('bist_assets_v29', JSON.stringify(assets));
         render();
     }
 
@@ -317,8 +306,10 @@
         return isNaN(num) ? 0 : num;
     }
 
+    // BIST anlık fiyatını dış kaynaklardan çekme fonksiyonu
     async function fetchBistPrice(symbol) {
         try {
+            // Yahoo Finance API üzerinden güvenli veri çekme
             const ticker = symbol.endsWith('.IS') ? symbol : symbol + '.IS';
             const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1d`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
@@ -332,12 +323,11 @@
                 if (price) return price;
             }
         } catch (e) {
-            console.log(`${symbol} için fiyat alınamadı.`);
+            console.log(`${symbol} için canlı fiyat alınamadı.`);
         }
         return null;
     }
 
-    // "Fiyatları Güncelle" butonuna basıldığında tüm portföyü tarar ve canlı fiyat çeker
     async function fetchAllPrices() {
         if (assets.length === 0) {
             alert("Portföyde güncellenecek hisse bulunmuyor.");
@@ -361,14 +351,6 @@
         }, 3000);
     }
 
-    function updateInlinePrice(index, newPriceVal) {
-        let price = parseNum(newPriceVal);
-        if (price >= 0) {
-            assets[index].currentPrice = price;
-            saveAndRender();
-        }
-    }
-
     async function addAsset() {
         const symbolInput = document.getElementById('symbol');
         const amountInput = document.getElementById('amount');
@@ -384,10 +366,12 @@
         }
 
         const statusText = document.getElementById('statusText');
-        statusText.innerText = `${symbol} ekleniyor ve fiyatı sorgulanıyor...`;
+        statusText.innerText = `${symbol} ekleniyor, güncel fiyatı aranıyor...`;
 
-        // İlk eklemede anlık fiyatı çekmeyi dener, çekemezse maliyeti baz alır
+        // Otomatik olarak güncel fiyatı dışarıdan bulmaya çalış
         let livePrice = await fetchBistPrice(symbol);
+        
+        // Eğer anlık fiyat çekilemezse geçici olarak girdiğin maliyeti yazar, butondan sonra tekrar güncelleyebilirsin
         if (!livePrice || livePrice <= 0) {
             livePrice = newAvgCost;
         }
@@ -454,9 +438,7 @@
                 <td><strong style="color: var(--accent-primary);">${item.symbol}</strong></td>
                 <td>${item.amount.toLocaleString('tr-TR')}</td>
                 <td>₺${item.avgCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td>
-                    <input type="text" class="price-input" value="${item.currentPrice}" onchange="updateInlinePrice(${index}, this.value)">
-                </td>
+                <td>₺${item.currentPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td>₺${itemVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td class="${isPos ? 'positive' : 'negative'}">₺${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td><span class="badge ${isPos ? 'badge-positive' : 'badge-negative'}">%${ratio.toFixed(2)}</span></td>
