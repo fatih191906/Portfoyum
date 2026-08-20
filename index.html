@@ -3,150 +3,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföy Takip Uygulaması</title>
+    <title>Portföy Takip & Maliyet Hesaplayıcı</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --border-color: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-blue: #38bdf8;
-            --green: #22c55e;
-            --red: #ef4444;
+            --bg-color: #0b0f19;
+            --card-bg: #151c2c;
+            --card-border: #232d42;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-primary: #38bdf8;
+            --accent-hover: #0284c7;
+            --green-bg: rgba(34, 197, 94, 0.1);
+            --green-text: #4ade80;
+            --red-bg: rgba(239, 68, 68, 0.1);
+            --red-text: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            margin: 0;
-            padding: 20px;
+            padding: 24px 16px;
+            line-height: 1.5;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
-        h1, h2 {
-            margin-top: 0;
+        header {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 16px;
         }
 
-        .grid {
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .grid-summary {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
         .card {
             background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 18px;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: #3b82f6;
         }
 
         .card-title {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            font-weight: 600;
             color: var(--text-muted);
-            margin-bottom: 8px;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
         }
 
         .card-value {
-            font-size: 1.5rem;
-            font-weight: bold;
+            font-size: 1.6rem;
+            font-weight: 700;
         }
 
-        .form-group {
+        .section-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) 100px;
-            gap: 10px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) 120px;
+            gap: 12px;
         }
 
         input {
             background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--card-border);
             color: var(--text-main);
-            padding: 10px;
-            border-radius: 6px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
             outline: none;
+            transition: border-color 0.2s;
         }
 
         input:focus {
-            border-color: var(--accent-blue);
+            border-color: var(--accent-primary);
         }
 
-        button {
-            background-color: var(--accent-blue);
-            color: #000;
-            font-weight: bold;
+        button.btn-primary {
+            background-color: var(--accent-primary);
+            color: #0b0f19;
+            font-weight: 600;
             border: none;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 10px 16px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
 
-        button:hover {
-            opacity: 0.9;
+        button.btn-primary:hover {
+            background-color: var(--accent-hover);
+            color: #fff;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            background-color: var(--card-bg);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        th, td {
-            padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
         }
 
         th {
             background-color: #111827;
             color: var(--text-muted);
+            font-weight: 600;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--card-border);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
             font-size: 0.85rem;
         }
 
-        .positive { color: var(--green); }
-        .negative { color: var(--red); }
+        .badge-positive {
+            background-color: var(--green-bg);
+            color: var(--green-text);
+        }
+
+        .badge-negative {
+            background-color: var(--red-bg);
+            color: var(--red-text);
+        }
+
+        .positive { color: var(--green-text); }
+        .negative { color: var(--red-text); }
 
         .btn-delete {
             background-color: transparent;
-            color: var(--red);
-            padding: 4px 8px;
-            border: 1px solid var(--red);
+            color: var(--red-text);
+            border: 1px solid var(--card-border);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
         }
 
         .btn-delete:hover {
-            background-color: var(--red);
-            color: #fff;
-        }
-
-        .calc-box {
-            margin-top: 30px;
+            background-color: var(--red-bg);
+            border-color: var(--red-text);
         }
 
         .calc-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
+            gap: 12px;
+        }
+
+        .calc-result-box {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 style="color: var(--accent-blue);">Portföy Takip & Maliyet Hesaplayıcı</h1>
+    <header>
+        <h1>Portföy Takip Platformu</h1>
+    </header>
 
     <!-- ÖZET KARTLARI -->
-    <div class="grid">
+    <div class="grid-summary">
         <div class="card">
             <div class="card-title">Portföy Değeri</div>
             <div class="card-value" id="totalValue">₺0.00</div>
@@ -166,48 +265,50 @@
     </div>
 
     <!-- VARLIK EKLEME FORMU -->
-    <div class="card" style="margin-bottom: 25px;">
-        <h2 style="font-size: 1.1rem; margin-bottom: 15px;">Yeni Varlık Ekle</h2>
-        <div class="form-group">
-            <input type="text" id="symbol" placeholder="Kod (Örn: SASA)" style="text-transform:uppercase">
+    <div class="section-card">
+        <div class="section-title">Yeni Varlık Ekle</div>
+        <div class="form-grid">
+            <input type="text" id="symbol" placeholder="Hisse/Fon Kodu (Örn: SASA)" style="text-transform:uppercase">
             <input type="number" id="amount" placeholder="Adet" step="any">
             <input type="number" id="avgCost" placeholder="Maliyet (₺)" step="any">
             <input type="number" id="currentPrice" placeholder="Güncel Fiyat (₺)" step="any">
-            <button onclick="addAsset()">Ekle</button>
+            <button class="btn-primary" onclick="addAsset()">Ekle</button>
         </div>
     </div>
 
     <!-- PORTFÖY TABLOSU -->
-    <div style="overflow-x: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Kod</th>
-                    <th>Adet</th>
-                    <th>Ort. Maliyet</th>
-                    <th>Güncel Fiyat</th>
-                    <th>Toplam Değer</th>
-                    <th>Kar / Zarar</th>
-                    <th>Oran (%)</th>
-                    <th>İşlem</th>
-                </tr>
-            </thead>
-            <tbody id="assetList">
-                <!-- Veriler buraya eklenecek -->
-            </tbody>
-        </table>
+    <div class="section-card" style="padding: 0; overflow: hidden;">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kod</th>
+                        <th>Adet</th>
+                        <th>Ort. Maliyet</th>
+                        <th>Güncel Fiyat</th>
+                        <th>Toplam Değer</th>
+                        <th>Kar / Zarar</th>
+                        <th>Oran (%)</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody id="assetList">
+                    <!-- Veriler dinamik eklenecek -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- MALİYET HESAPLAYICI -->
-    <div class="card calc-box">
-        <h2 style="font-size: 1.1rem; margin-bottom: 15px;">Ağırlıklı Ortalama Maliyet Hesaplayıcı</h2>
+    <div class="section-card">
+        <div class="section-title">Ağırlıklı Ortalama Maliyet Hesaplayıcı</div>
         <div class="calc-grid">
             <input type="number" id="calcOldQty" placeholder="Mevcut Adet" oninput="calculateNewCost()">
-            <input type="number" id="calcOldCost" placeholder="Mevcut Maliyet" oninput="calculateNewCost()">
+            <input type="number" id="calcOldCost" placeholder="Mevcut Maliyet (₺)" oninput="calculateNewCost()">
             <input type="number" id="calcNewQty" placeholder="Yeni Alınan Adet" oninput="calculateNewCost()">
-            <input type="number" id="calcNewPrice" placeholder="Yeni Alış Fiyatı" oninput="calculateNewCost()">
+            <input type="number" id="calcNewPrice" placeholder="Yeni Alış Fiyatı (₺)" oninput="calculateNewCost()">
         </div>
-        <div style="margin-top: 15px; font-weight: bold; font-size: 1.1rem;" id="calcResult">
+        <div class="calc-result-box" id="calcResult">
             Yeni Ortalama Maliyet: ₺0.00
         </div>
     </div>
@@ -228,7 +329,7 @@
         const currentPrice = parseFloat(document.getElementById('currentPrice').value);
 
         if (!symbol || isNaN(amount) || isNaN(avgCost) || isNaN(currentPrice)) {
-            alert('Lütfen tüm alanları doğru şekilde doldurun.');
+            alert('Lütfen tüm alanları geçerli değerlerle doldurun.');
             return;
         }
 
@@ -254,6 +355,10 @@
         let totalVal = 0;
         let totalCst = 0;
 
+        if (assets.length === 0) {
+            list.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Henüz eklenmiş bir varlık bulunmuyor.</td></tr>`;
+        }
+
         assets.forEach((item, index) => {
             const itemCost = item.amount * item.avgCost;
             const itemVal = item.amount * item.currentPrice;
@@ -263,15 +368,17 @@
             totalVal += itemVal;
             totalCst += itemCost;
 
+            const isPos = profit >= 0;
+
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><b>${item.symbol}</b></td>
-                <td>${item.amount.toLocaleString()}</td>
-                <td>₺${item.avgCost.toFixed(2)}</td>
-                <td>₺${item.currentPrice.toFixed(2)}</td>
-                <td>₺${itemVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                <td class="${profit >= 0 ? 'positive' : 'negative'}">₺${profit.toFixed(2)}</td>
-                <td class="${ratio >= 0 ? 'positive' : 'negative'}">%${ratio.toFixed(2)}</td>
+                <td><strong style="color: var(--accent-primary);">${item.symbol}</strong></td>
+                <td>${item.amount.toLocaleString('tr-TR')}</td>
+                <td>₺${item.avgCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td>₺${item.currentPrice.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td>₺${itemVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td class="${isPos ? 'positive' : 'negative'}">₺${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td><span class="badge ${isPos ? 'badge-positive' : 'badge-negative'}">%${ratio.toFixed(2)}</span></td>
                 <td><button class="btn-delete" onclick="deleteAsset(${index})">Sil</button></td>
             `;
             list.appendChild(row);
@@ -280,11 +387,11 @@
         const totalProfit = totalVal - totalCst;
         const totalRatio = totalCst > 0 ? (totalProfit / totalCst) * 100 : 0;
 
-        document.getElementById('totalValue').innerText = `₺${totalVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-        document.getElementById('totalCost').innerText = `₺${totalCst.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('totalValue').innerText = `₺${totalVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('totalCost').innerText = `₺${totalCst.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         
         const profitEl = document.getElementById('totalProfit');
-        profitEl.innerText = `₺${totalProfit.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        profitEl.innerText = `₺${totalProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         profitEl.className = `card-value ${totalProfit >= 0 ? 'positive' : 'negative'}`;
 
         const ratioEl = document.getElementById('totalProfitRatio');
@@ -307,7 +414,7 @@
         const totalCostSum = (oldQty * oldCost) + (newQty * newPrice);
         const finalAvgCost = totalCostSum / totalQty;
 
-        document.getElementById('calcResult').innerText = `Yeni Ortalama Maliyet: ₺${finalAvgCost.toFixed(2)} (Toplam Adet: ${totalQty})`;
+        document.getElementById('calcResult').innerText = `Yeni Ortalama Maliyet: ₺${finalAvgCost.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (Toplam Adet: ${totalQty.toLocaleString('tr-TR')})`;
     }
 
     render();
