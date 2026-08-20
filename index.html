@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v10</title>
+    <title>Portföyüm v12 (BİST 15 Dk. Gecikmeli)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -30,7 +30,7 @@
             line-height: 1.5;
         }
 
-        .container { max-width: 1100px; margin: 0 auto; }
+        .container { max-width: 1150px; margin: 0 auto; }
 
         header {
             margin-bottom: 24px;
@@ -44,6 +44,27 @@
         }
 
         header h1 { font-size: 1.5rem; font-weight: 700; color: var(--accent-primary); }
+
+        .live-status {
+            font-size: 0.85rem;
+            color: var(--green-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--green-bg);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--green-text);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--green-text);
+        }
 
         .grid-summary {
             display: grid;
@@ -77,7 +98,14 @@
             margin-bottom: 24px;
         }
 
-        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; }
+        .section-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title { font-size: 1.1rem; font-weight: 600; }
 
         .form-grid {
             display: grid;
@@ -93,6 +121,7 @@
             border-radius: 8px;
             font-size: 0.9rem;
             outline: none;
+            width: 100%;
         }
 
         input:focus { border-color: var(--accent-primary); }
@@ -108,6 +137,19 @@
         }
 
         button.btn-primary:hover { background-color: var(--accent-hover); color: #fff; }
+
+        .btn-refresh {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-refresh:hover { background-color: var(--accent-primary); color: #0b0f19; }
 
         .table-container {
             overflow-x: auto;
@@ -129,15 +171,12 @@
         .btn-action {
             background-color: transparent;
             border: 1px solid var(--card-border);
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-main);
-            margin-right: 4px;
         }
-
-        .btn-action:hover { background-color: var(--card-border); }
         .btn-delete { color: var(--red-text); }
         .btn-delete:hover { background-color: var(--red-bg); }
 
@@ -162,7 +201,11 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v10</h1>
+        <h1>Portföyüm v12</h1>
+        <div class="live-status">
+            <span class="pulse-dot"></span> 
+            <span id="statusText">BİST 15 Dk. Gecikmeli Veri Servisi Aktif</span>
+        </div>
     </header>
 
     <!-- ÖZET KARTLARI -->
@@ -189,17 +232,20 @@
     <div class="section-card">
         <div class="section-title">Yeni BİST Hissesi Ekle / Güncelle</div>
         <div class="form-grid">
-            <input type="text" id="symbol" placeholder="Hisse Kodu (Örn: SASA)" style="text-transform:uppercase">
-            <input type="text" id="amount" placeholder="Adet (Örn: 100)">
+            <input type="text" id="symbol" placeholder="Hisse (Örn: SASA)" style="text-transform:uppercase">
+            <input type="text" id="amount" placeholder="Adet (Örn: 1000)">
             <input type="text" id="avgCost" placeholder="Ort. Maliyet (₺)">
-            <input type="text" id="currentPriceInput" placeholder="Kapanış / Güncel Fiyat (₺)">
+            <input type="text" id="currentPriceInput" placeholder="Manuel Fiyat (İsteğe Bağlı)">
             <button type="button" class="btn-primary" onclick="addAsset()">Ekle</button>
         </div>
     </div>
 
     <!-- PORTFÖY TABLOSU -->
     <div class="section-card" style="padding: 20px 0 0 0; overflow: hidden;">
-        <div class="section-title" style="padding: 0 20px;">Hisse Portföyü</div>
+        <div class="section-header-flex" style="padding: 0 20px;">
+            <div class="section-title">Hisse Portföyü</div>
+            <button class="btn-refresh" id="refreshBtn" onclick="fetchAllDelayedPrices()">⚡ Gecikmeli Fiyatları Güncelle</button>
+        </div>
         <div class="table-container" style="border: none; border-radius: 0;">
             <table>
                 <thead>
@@ -207,11 +253,11 @@
                         <th>Hisse</th>
                         <th>Adet</th>
                         <th>Ort. Maliyet</th>
-                        <th>Güncel Fiyat</th>
+                        <th>15 Dk. Gecikmeli Fiyat</th>
                         <th>Toplam Değer</th>
                         <th>Kar / Zarar</th>
                         <th>Oran (%)</th>
-                        <th>İşlemler</th>
+                        <th>İşlem</th>
                     </tr>
                 </thead>
                 <tbody id="assetList">
@@ -236,7 +282,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v10";
+    document.title = "Portföyüm v12";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
@@ -246,9 +292,92 @@
 
     function parseNum(val) {
         if (!val) return 0;
-        let clean = val.toString().replace(',', '.');
+        let clean = val.toString().replace(/\./g, '').replace(',', '.');
         let num = parseFloat(clean);
         return isNaN(num) ? 0 : num;
+    }
+
+    // JSONP YÖNTEMİ İLE CORS ENGELİSİZ BİST 15 DK GECİKMELİ VERİ ÇEKİMİ
+    function fetchSingleDelayedPrice(symbol) {
+        return new Promise((resolve) => {
+            const cleanSymbol = symbol.trim().toUpperCase();
+            const callbackName = 'bist_cb_' + cleanSymbol + '_' + Math.random().toString(36).substring(7);
+            
+            // Timeout kontrolü (3 saniye yanıt gelmezse pas geç)
+            const timer = setTimeout(() => {
+                delete window[callbackName];
+                const scriptEl = document.getElementById(callbackName);
+                if (scriptEl) scriptEl.remove();
+                resolve(null);
+            }, 3500);
+
+            window[callbackName] = function(data) {
+                clearTimeout(timer);
+                delete window[callbackName];
+                const scriptEl = document.getElementById(callbackName);
+                if (scriptEl) scriptEl.remove();
+
+                try {
+                    // Bigpara JSONP çıktısı çözümleme
+                    if (data && data[0] && data[0].kapanis) {
+                        const price = parseFloat(data[0].kapanis.toString().replace(',', '.'));
+                        if (price > 0) resolve(price);
+                        else resolve(null);
+                    } else if (data && data.data && data.data.kapanis) {
+                        const price = parseFloat(data.data.kapanis.toString().replace(',', '.'));
+                        if (price > 0) resolve(price);
+                        else resolve(null);
+                    } else {
+                        resolve(null);
+                    }
+                } catch (e) {
+                    resolve(null);
+                }
+            };
+
+            const script = document.createElement('script');
+            script.id = callbackName;
+            script.src = `https://bigpara.hurriyet.com.tr/api/v1/hisse/kapanis/${cleanSymbol}?callback=${callbackName}&_=${new Date().getTime()}`;
+            script.onerror = () => {
+                clearTimeout(timer);
+                delete window[callbackName];
+                script.remove();
+                resolve(null);
+            };
+            document.body.appendChild(script);
+        });
+    }
+
+    async function fetchAllDelayedPrices() {
+        if (assets.length === 0) return;
+
+        const statusText = document.getElementById('statusText');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        statusText.innerText = "15 Dk. Gecikmeli Fiyatlar Çekiliyor...";
+        refreshBtn.disabled = true;
+        refreshBtn.innerText = "⏳ Güncelleniyor...";
+
+        let updatedCount = 0;
+
+        for (let item of assets) {
+            const livePrice = await fetchSingleDelayedPrice(item.symbol);
+            if (livePrice && livePrice > 0) {
+                item.currentPrice = livePrice;
+                updatedCount++;
+            }
+        }
+
+        saveAndRender();
+
+        if (updatedCount > 0) {
+            statusText.innerText = `Son Güncelleme: ${new Date().toLocaleTimeString('tr-TR')} (${updatedCount}/${assets.length} Hisse)`;
+        } else {
+            statusText.innerText = "Sunucu yanıt vermedi (Borsa kapalı veya sembol geçersiz)";
+        }
+
+        refreshBtn.disabled = false;
+        refreshBtn.innerText = "⚡ Gecikmeli Fiyatları Güncelle";
     }
 
     function addAsset() {
@@ -262,12 +391,8 @@
         let newAvgCost = parseNum(avgCostInput.value);
         let manualPrice = parseNum(currentPriceInput.value);
 
-        if (!symbol) {
-            alert('Lütfen Hisse Kodunu girin.');
-            return;
-        }
-        if (newAmount <= 0) {
-            alert('Lütfen geçerli bir Adet girin.');
+        if (!symbol || newAmount <= 0) {
+            alert('Lütfen Hisse Kodu ve Adet girin.');
             return;
         }
 
@@ -279,12 +404,10 @@
         if (existingIndex > -1) {
             let existing = assets[existingIndex];
             let totalQty = existing.amount + newAmount;
-            
             let totalCostSum = (existing.amount * existing.avgCost) + (newAmount * newAvgCost);
-            let finalAvgCost = totalCostSum / totalQty;
-
+            
             existing.amount = totalQty;
-            existing.avgCost = finalAvgCost;
+            existing.avgCost = totalCostSum / totalQty;
             if (manualPrice > 0) existing.currentPrice = manualPrice;
         } else {
             assets.push({ 
@@ -301,18 +424,7 @@
         currentPriceInput.value = '';
 
         saveAndRender();
-    }
-
-    function updatePriceManual(index) {
-        const item = assets[index];
-        const newPriceStr = prompt(`${item.symbol} için güncel/kapanış fiyatını girin:`, item.currentPrice);
-        if (newPriceStr !== null) {
-            const newPrice = parseNum(newPriceStr);
-            if (newPrice > 0) {
-                item.currentPrice = newPrice;
-                saveAndRender();
-            }
-        }
+        fetchAllDelayedPrices();
     }
 
     function deleteAsset(index) {
@@ -354,7 +466,6 @@
                 <td class="${isPos ? 'positive' : 'negative'}">₺${profit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                 <td><span class="badge ${isPos ? 'badge-positive' : 'badge-negative'}">%${ratio.toFixed(2)}</span></td>
                 <td>
-                    <button class="btn-action" onclick="updatePriceManual(${index})">✏️ Fiyat Güncelle</button>
                     <button class="btn-action btn-delete" onclick="deleteAsset(${index})">🗑️ Sil</button>
                 </td>
             `;
@@ -397,6 +508,7 @@
     }
 
     render();
+    fetchAllDelayedPrices();
 </script>
 
 </body>
