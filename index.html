@@ -102,7 +102,7 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) 120px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 120px;
             gap: 12px;
         }
 
@@ -179,9 +179,9 @@
 
 <div class="container">
     <header>
-        <h1>BİST Portföy Takip</h1>
+        <h1>BİST Portföy Takip v2</h1>
         <div class="live-status">
-            <span class="pulse-dot"></span> Canlı BİST Verisi
+            <span class="pulse-dot"></span> Canlı Veri Yayını
         </div>
     </header>
 
@@ -211,8 +211,7 @@
         <div class="form-grid">
             <input type="text" id="symbol" placeholder="Hisse Kodu (Örn: SASA)" style="text-transform:uppercase">
             <input type="number" id="amount" placeholder="Adet" step="any">
-            <input type="number" id="avgCost" placeholder="Ort. Maliyet (₺ - İsteğe Bağlı)" step="any">
-            <input type="number" id="currentPriceInput" placeholder="Güncel Fiyat (₺ - İsteğe Bağlı)" step="any">
+            <input type="number" id="avgCost" placeholder="Ort. Maliyet (₺)" step="any">
             <button class="btn-primary" onclick="addAsset()">Ekle</button>
         </div>
     </div>
@@ -234,7 +233,6 @@
                     </tr>
                 </thead>
                 <tbody id="assetList">
-                    <!-- Dinamik İçerik -->
                 </tbody>
             </table>
         </div>
@@ -288,34 +286,33 @@
         const symbolInput = document.getElementById('symbol');
         const amountInput = document.getElementById('amount');
         const avgCostInput = document.getElementById('avgCost');
-        const currentPriceInput = document.getElementById('currentPriceInput');
 
         const symbol = symbolInput.value.trim().toUpperCase().replace('.IS', '');
         const amount = parseFloat(amountInput.value);
         let avgCost = parseFloat(avgCostInput.value);
-        let manualPrice = parseFloat(currentPriceInput.value);
 
-        // SADECE Hisse Kodu ve Adet zorunludur.
-        if (!symbol || isNaN(amount) || amount <= 0) {
-            alert('Lütfen Hisse Kodu ve Adet alanlarını doğru şekilde doldurun.');
+        if (!symbol) {
+            alert('Lütfen Hisse Kodunu girin.');
             return;
         }
-
-        if (isNaN(avgCost)) avgCost = 0;
-        const initialPrice = !isNaN(manualPrice) ? manualPrice : avgCost;
+        if (isNaN(amount) || amount <= 0) {
+            alert('Lütfen geçerli bir Adet girin.');
+            return;
+        }
+        if (isNaN(avgCost)) {
+            avgCost = 0;
+        }
 
         assets.push({ 
             symbol: symbol, 
             amount: amount, 
             avgCost: avgCost, 
-            currentPrice: initialPrice 
+            currentPrice: avgCost 
         });
 
-        // Alanları Temizle
         symbolInput.value = '';
         amountInput.value = '';
         avgCostInput.value = '';
-        currentPriceInput.value = '';
 
         saveAndRender();
         fetchLivePrices();
@@ -329,7 +326,7 @@
             const livePrice = await fetchPriceFromBist(item.symbol);
             if (livePrice && livePrice !== item.currentPrice) {
                 item.currentPrice = livePrice;
-                if(item.avgCost === 0) item.avgCost = livePrice; // Eğer maliyet 0 girildiyse otomatik fiyatı maliyet yapar
+                if(item.avgCost === 0) item.avgCost = livePrice;
                 hasUpdate = true;
             }
         }
@@ -389,7 +386,7 @@
         profitEl.innerText = `₺${totalProfit.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         profitEl.className = `card-value ${totalProfit >= 0 ? 'positive' : 'negative'}`;
 
-        const ratioEl = document.getElementById('totalRatio');
+        const ratioEl = document.getElementById('totalProfitRatio');
         if (ratioEl) {
             ratioEl.innerText = `%${totalRatio.toFixed(2)}`;
             ratioEl.className = `card-value ${totalRatio >= 0 ? 'positive' : 'negative'}`;
