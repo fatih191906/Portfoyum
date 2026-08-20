@@ -58,14 +58,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Kurum / Aracı Kurum</label>
-                        <select id="hisseKurum" class="form-select">
-                            <option value="Vakıf Yatırım">Vakıf Yatırım</option>
-                            <option value="İnfo Yatırım">İnfo Yatırım</option>
-                            <option value="Alnus Yatırım">Alnus Yatırım</option>
-                            <option value="Enpara">Enpara</option>
-                            <option value="Marbaş">Marbaş</option>
-                            <option value="Ziraat Bankası">Ziraat Bankası</option>
-                        </select>
+                        <input type="text" id="hisseKurum" class="form-control" placeholder="Örn: Vakıf, İnfo, Alnus">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Adet</label>
@@ -130,15 +123,10 @@
                         if (!item.islemGecmisi) {
                             return {
                                 kod: item.kod || "BILINMIYOR",
-                                islemGecmisi: [{ adet: item.adet || 0, maliyet: item.maliyet || item.ortMaliyet || 0, kurum: "Diğer", tarih: "Geçmiş Alım" }],
+                                islemGecmisi: [{ adet: item.adet || 0, maliyet: item.maliyet || item.ortMaliyet || 0, kurum: "-", tarih: "Geçmiş Alım" }],
                                 toplamAdet: item.adet || 0,
                                 ortMaliyet: item.maliyet || item.ortMaliyet || 0
                             };
-                        } else {
-                            // Eski kayıtlar için kurum bilgisi yoksa varsayılan atayalım
-                            item.islemGecmisi.forEach(islem => {
-                                if(!islem.kurum) islem.kurum = "Vakıf Yatırım";
-                            });
                         }
                         return item;
                     });
@@ -176,7 +164,7 @@
             if (!kodInput || !adetInput || !maliyetInput || !kurumInput) return;
 
             let kod = kodInput.value.toUpperCase().trim();
-            let kurum = kurumInput.value;
+            let kurum = kurumInput.value.trim() || "-";
             let adet = parseFloat(adetInput.value);
             let maliyet = parseFloat(maliyetInput.value);
 
@@ -208,6 +196,7 @@
 
             kaydetVeGuncelle();
             kodInput.value = "";
+            kurumInput.value = "";
             adetInput.value = "100";
         }
 
@@ -275,7 +264,7 @@
 
                         subRowsHtml += `
                             <tr class="text-muted align-middle">
-                                <td class="ps-4">↳ ${islem.tarih || 'İşlem'} <span class="badge badge-kurum ms-1">${islem.kurum || 'Vakıf Yatırım'}</span></td>
+                                <td class="ps-4">↳ ${islem.tarih || 'İşlem'} <span class="badge badge-kurum ms-1">${islem.kurum || '-'}</span></td>
                                 <td><b>${islem.adet} Adet</b></td>
                                 <td>Maliyet: ${islem.maliyet.toFixed(2)} TL</td>
                                 <td>Fiyat: ${guncelFiyat.toFixed(2)} TL</td>
