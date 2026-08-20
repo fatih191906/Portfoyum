@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BİST Portföy Takip v3</title>
+    <title>BİST Portföy Takip v4</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -183,7 +183,7 @@
 
 <div class="container">
     <header>
-        <h1>BİST Portföy Takip v3</h1>
+        <h1>BİST Portföy Takip v4</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> Canlı Veri Servisi
         </div>
@@ -211,16 +211,14 @@
 
     <!-- VARLIK EKLEME FORMU -->
     <div class="section-card">
-        <div class="section-title">Yeni BİST Hissesi Ekle</div>
-        <form id="assetForm" onsubmit="addAsset(event)">
-            <div class="form-grid">
-                <input type="text" id="symbol" placeholder="Hisse Kodu (Örn: SASA)" style="text-transform:uppercase" required>
-                <input type="number" id="amount" placeholder="Adet" step="any" required>
-                <input type="number" id="avgCost" placeholder="Ort. Maliyet (₺)" step="any">
-                <input type="number" id="currentPriceInput" placeholder="Güncel Fiyat (₺)" step="any">
-                <button type="submit" class="btn-primary">Ekle</button>
-            </div>
-        </form>
+        <div class="section-title">Yeni BİST Hissesi Ekle / Güncelle</div>
+        <div class="form-grid">
+            <input type="text" id="symbol" placeholder="Hisse Kodu (Örn: SASA)" style="text-transform:uppercase">
+            <input type="text" id="amount" placeholder="Adet (Örn: 100)">
+            <input type="text" id="avgCost" placeholder="Ort. Maliyet (₺ - İsteğe Bağlı)">
+            <input type="text" id="currentPriceInput" placeholder="Güncel Fiyat (₺ - İsteğe Bağlı)">
+            <button type="button" class="btn-primary" onclick="addAsset()">Ekle</button>
+        </div>
     </div>
 
     <!-- PORTFÖY TABLOSU -->
@@ -249,10 +247,10 @@
     <div class="section-card">
         <div class="section-title">Ağırlıklı Ortalama Maliyet Hesaplayıcı</div>
         <div class="calc-grid">
-            <input type="number" id="calcOldQty" placeholder="Mevcut Adet" oninput="calculateNewCost()">
-            <input type="number" id="calcOldCost" placeholder="Mevcut Maliyet (₺)" oninput="calculateNewCost()">
-            <input type="number" id="calcNewQty" placeholder="Yeni Alınan Adet" oninput="calculateNewCost()">
-            <input type="number" id="calcNewPrice" placeholder="Yeni Alış Fiyatı (₺)" oninput="calculateNewCost()">
+            <input type="text" id="calcOldQty" placeholder="Mevcut Adet" oninput="calculateNewCost()">
+            <input type="text" id="calcOldCost" placeholder="Mevcut Maliyet (₺)" oninput="calculateNewCost()">
+            <input type="text" id="calcNewQty" placeholder="Yeni Alınan Adet" oninput="calculateNewCost()">
+            <input type="text" id="calcNewPrice" placeholder="Yeni Alış Fiyatı (₺)" oninput="calculateNewCost()">
         </div>
         <div class="calc-result-box" id="calcResult">
             Yeni Ortalama Maliyet: ₺0.00
@@ -268,10 +266,16 @@
         render();
     }
 
+    function parseNum(val) {
+        if (!val) return 0;
+        let clean = val.toString().replace(',', '.');
+        let num = parseFloat(clean);
+        return isNaN(num) ? 0 : num;
+    }
+
     async function fetchPriceFromBist(symbol) {
         const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
         try {
-            // Yahoo Finance API üzerinden fiyat çekme
             const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
             
@@ -287,34 +291,58 @@
         }
     }
 
-    function addAsset(e) {
-        e.preventDefault();
-
+    function addAsset() {
         const symbolInput = document.getElementById('symbol');
         const amountInput = document.getElementById('amount');
         const avgCostInput = document.getElementById('avgCost');
         const currentPriceInput = document.getElementById('currentPriceInput');
 
         const symbol = symbolInput.value.trim().toUpperCase().replace('.IS', '');
-        const amount = parseFloat(amountInput.value) || 0;
-        let avgCost = parseFloat(avgCostInput.value) || 0;
-        let manualPrice = parseFloat(currentPriceInput.value) || 0;
+        const newAmount = parseNum(amountInput.value);
+        let newAvgCost = parseNum(avgCostInput.value);
+        let manualPrice = parseNum(currentPriceInput.value);
 
-        if (!symbol || amount <= 0) return;
+        if (!symbol) {
+            alert('Lütfen Hisse Kodunu girin.');
+            return;
+        }
+        if (newAmount <= 0) {
+            alert('Lütfen geçerli bir Adet girin.');
+            return;
+        }
 
-        // Fiyat veya maliyet girilmediyse birbirine eşitle
-        const initialPrice = manualPrice > 0 ? manualPrice : (avgCost > 0 ? avgCost : 1);
-        if (avgCost === 0) avgCost = initialPrice;
+        const initialPrice = manualPrice > 0 ? manualPrice : (newAvgCost > 0 ? newAvgCost : 0);
+        if (newAvgCost === 0 && initialPrice > 0) newAvgCost = initialPrice;
 
-        assets.push({ 
-            symbol: symbol, 
-            amount: amount, 
-            avgCost: avgCost, 
-            currentPrice: initialPrice 
-        });
+        // Hisse portföyde var mı kontrol et (ASELS birleştirme mantığı)
+        const existingIndex = assets.findIndex(a => a.symbol === symbol);
 
-        // Formu Sıfırla
-        document.getElementById('assetForm').reset();
+        if (existingIndex > -1) {
+            // Var olan hisse: Adet birleştir ve ağırlıklı ortalama maliyet hesapla
+            let existing = assets[existingIndex];
+            let totalQty = existing.amount + newAmount;
+            
+            let totalCostSum = (existing.amount * existing.avgCost) + (newAmount * newAvgCost);
+            let finalAvgCost = totalCostSum / totalQty;
+
+            existing.amount = totalQty;
+            existing.avgCost = finalAvgCost;
+            if (manualPrice > 0) existing.currentPrice = manualPrice;
+        } else {
+            // Yeni hisse: Direkt ekle
+            assets.push({ 
+                symbol: symbol, 
+                amount: newAmount, 
+                avgCost: newAvgCost, 
+                currentPrice: initialPrice > 0 ? initialPrice : newAvgCost
+            });
+        }
+
+        // Formu temizle
+        symbolInput.value = '';
+        amountInput.value = '';
+        avgCostInput.value = '';
+        currentPriceInput.value = '';
 
         saveAndRender();
         fetchLivePrices();
@@ -328,6 +356,7 @@
             const livePrice = await fetchPriceFromBist(item.symbol);
             if (livePrice && livePrice !== item.currentPrice) {
                 item.currentPrice = livePrice;
+                if (item.avgCost === 0) item.avgCost = livePrice;
                 hasUpdate = true;
             }
         }
@@ -338,9 +367,10 @@
 
     function updatePriceManual(index) {
         const item = assets[index];
-        const newPrice = prompt(`${item.symbol} için yeni güncel fiyatı girin:`, item.currentPrice);
-        if (newPrice !== null && !isNaN(parseFloat(newPrice))) {
-            item.currentPrice = parseFloat(newPrice);
+        const newPriceStr = prompt(`${item.symbol} için güncel fiyatı girin:`, item.currentPrice);
+        const newPrice = parseNum(newPriceStr);
+        if (newPrice > 0) {
+            item.currentPrice = newPrice;
             saveAndRender();
         }
     }
@@ -407,10 +437,10 @@
     }
 
     function calculateNewCost() {
-        const oldQty = parseFloat(document.getElementById('calcOldQty').value) || 0;
-        const oldCost = parseFloat(document.getElementById('calcOldCost').value) || 0;
-        const newQty = parseFloat(document.getElementById('calcNewQty').value) || 0;
-        const newPrice = parseFloat(document.getElementById('calcNewPrice').value) || 0;
+        const oldQty = parseNum(document.getElementById('calcOldQty').value);
+        const oldCost = parseNum(document.getElementById('calcOldCost').value);
+        const newQty = parseNum(document.getElementById('calcNewQty').value);
+        const newPrice = parseNum(document.getElementById('calcNewPrice').value);
 
         const totalQty = oldQty + newQty;
         if (totalQty === 0) {
