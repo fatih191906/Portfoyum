@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v8</title>
+    <title>Portföyüm v9</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -206,7 +206,7 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v8</h1>
+        <h1>Portföyüm v9</h1>
         <div class="live-status" id="statusBadge">
             <span class="pulse-dot"></span> <span id="statusText">BİST Servisi Hazır</span>
         </div>
@@ -286,7 +286,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v8";
+    document.title = "Portföyüm v9";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
@@ -301,58 +301,36 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // CORS ENGELİNE TAKILMAYAN JSONP FİYAT MOTORU
-    function fetchPriceJSONP(symbol) {
-        return new Promise((resolve) => {
-            const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
-            const callbackName = 'bist_cb_' + Math.random().toString(36).substring(2, 10);
-            const script = document.createElement('script');
-            
-            let isResolved = false;
+    // YENİLENMİŞ GARANTİLİ FİYAT ÇEKME FONKSİYONU
+    async function fetchSinglePrice(symbol) {
+        const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
+        const ts = new Date().getTime();
 
-            window[callbackName] = function(data) {
-                isResolved = true;
-                delete window[callbackName];
-                document.body.removeChild(script);
+        // 1. Kanal: Doğrudan Yahoo Finance Query v8 Endpoint
+        try {
+            const url = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS?interval=1d&range=1d&_=${ts}`;
+            const res = await fetch(url);
+            if (res.ok) {
+                const json = await res.json();
+                const meta = json?.chart?.result?.[0]?.meta;
+                const price = meta?.regularMarketPrice || meta?.chartPreviousClose;
+                if (price && price > 0) return parseFloat(price);
+            }
+        } catch (e) {}
 
-                try {
-                    let priceStr = null;
-                    if (data && data[cleanSymbol]) {
-                        priceStr = data[cleanSymbol].son_fiyat || data[cleanSymbol].son || data[cleanSymbol].kapanis;
-                    } else if (Array.isArray(data) && data[0]) {
-                        priceStr = data[0].son_fiyat || data[0].son || data[0].kapanis;
-                    }
-                    if (priceStr) {
-                        let p = parseFloat(priceStr.toString().replace('.', '').replace(',', '.'));
-                        if (!isNaN(p) && p > 0) {
-                            resolve(p);
-                            return;
-                        }
-                    }
-                } catch (e) {}
-                resolve(null);
-            };
+        // 2. Kanal: Backup CORS Gateway
+        try {
+            const backupUrl = `https://corsproxy.io/?${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/' + cleanSymbol + '.IS?interval=1d&range=1d')}&_=${ts}`;
+            const res2 = await fetch(backupUrl);
+            if (res2.ok) {
+                const json2 = await res2.parse();
+                const meta2 = json2?.chart?.result?.[0]?.meta;
+                const price2 = meta2?.regularMarketPrice || meta2?.chartPreviousClose;
+                if (price2 && price2 > 0) return parseFloat(price2);
+            }
+        } catch (e) {}
 
-            script.onerror = function() {
-                if (!isResolved) {
-                    delete window[callbackName];
-                    if (script.parentNode) document.body.removeChild(script);
-                    resolve(null);
-                }
-            };
-
-            // Mynet BİST Servisi JSONP
-            script.src = `https://finans.mynet.com/api/hisse/gethisseharita?hisse=${cleanSymbol}&callback=${callbackName}&_=${new Date().getTime()}`;
-            document.body.appendChild(script);
-
-            setTimeout(() => {
-                if (!isResolved) {
-                    delete window[callbackName];
-                    if (script.parentNode) document.body.removeChild(script);
-                    resolve(null);
-                }
-            }, 3000);
-        });
+        return null;
     }
 
     function addAsset() {
@@ -414,7 +392,7 @@
         const statusText = document.getElementById('statusText');
         const refreshBtn = document.getElementById('refreshBtn');
 
-        if(statusText) statusText.innerText = "Kapanış / Son Fiyatlar Çekiliyor...";
+        if(statusText) statusText.innerText = "Son Fiyatlar Çekiliyor...";
         if(refreshBtn) {
             refreshBtn.disabled = true;
             refreshBtn.innerText = "⏳ Güncelleniyor...";
@@ -422,7 +400,7 @@
 
         let updatedCount = 0;
         for (let item of assets) {
-            const livePrice = await fetchPriceJSONP(item.symbol);
+            const livePrice = await fetchSinglePrice(item.symbol);
             if (livePrice && livePrice > 0) {
                 item.currentPrice = livePrice;
                 updatedCount++;
@@ -433,7 +411,7 @@
             saveAndRender();
             if(statusText) statusText.innerText = `Son Güncelleme: ${new Date().toLocaleTimeString('tr-TR')}`;
         } else {
-            if(statusText) statusText.innerText = "Fiyat Bağlantısı Sağlanamadı";
+            if(statusText) statusText.innerText = "Bağlantı Kurulamadı (Manuel Güncelleyin)";
         }
 
         if(refreshBtn) {
