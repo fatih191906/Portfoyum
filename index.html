@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portföyüm v7</title>
+    <title>Portföyüm v8</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -206,7 +206,7 @@
 
 <div class="container">
     <header>
-        <h1>Portföyüm v7</h1>
+        <h1>Portföyüm v8</h1>
         <div class="live-status" id="statusBadge">
             <span class="pulse-dot"></span> <span id="statusText">BİST Servisi Hazır</span>
         </div>
@@ -286,7 +286,7 @@
 </div>
 
 <script>
-    document.title = "Portföyüm v7";
+    document.title = "Portföyüm v8";
     let assets = JSON.parse(localStorage.getItem('bist_assets')) || [];
 
     function saveAndRender() {
@@ -301,55 +301,58 @@
         return isNaN(num) ? 0 : num;
     }
 
-    // ÜÇ KADEMELİ GÜVENİLİR FİYAT MOTORU
-    async function fetchSinglePrice(symbol) {
-        const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
-        const ts = new Date().getTime();
+    // CORS ENGELİNE TAKILMAYAN JSONP FİYAT MOTORU
+    function fetchPriceJSONP(symbol) {
+        return new Promise((resolve) => {
+            const cleanSymbol = symbol.trim().toUpperCase().replace('.IS', '');
+            const callbackName = 'bist_cb_' + Math.random().toString(36).substring(2, 10);
+            const script = document.createElement('script');
+            
+            let isResolved = false;
 
-        // 1. Kaynak: Yahoo Finance Query API
-        try {
-            const url1 = `https://query1.finance.yahoo.com/v8/finance/chart/${cleanSymbol}.IS?interval=1m&range=1d&_=${ts}`;
-            const proxy1 = `https://api.allorigins.win/raw?url=${encodeURIComponent(url1)}`;
-            const res1 = await fetch(proxy1);
-            if (res1.ok) {
-                const data1 = await res1.json();
-                const price1 = data1.chart.result[0].meta.regularMarketPrice;
-                if (price1 && price1 > 0) return parseFloat(price1);
-            }
-        } catch (e) {}
+            window[callbackName] = function(data) {
+                isResolved = true;
+                delete window[callbackName];
+                document.body.removeChild(script);
 
-        // 2. Kaynak: Stooq Finance API
-        try {
-            const url2 = `https://stooq.com/q/l/?s=${cleanSymbol}.tr&f=sd2t2ohlcv&h&e=csv&_=${ts}`;
-            const proxy2 = `https://api.allorigins.win/raw?url=${encodeURIComponent(url2)}`;
-            const res2 = await fetch(proxy2);
-            if (res2.ok) {
-                const csvText = await res2.text();
-                const lines = csvText.split('\n');
-                if (lines.length > 1) {
-                    const cols = lines[1].split(',');
-                    const price2 = parseFloat(cols[6]);
-                    if (price2 && price2 > 0) return price2;
+                try {
+                    let priceStr = null;
+                    if (data && data[cleanSymbol]) {
+                        priceStr = data[cleanSymbol].son_fiyat || data[cleanSymbol].son || data[cleanSymbol].kapanis;
+                    } else if (Array.isArray(data) && data[0]) {
+                        priceStr = data[0].son_fiyat || data[0].son || data[0].kapanis;
+                    }
+                    if (priceStr) {
+                        let p = parseFloat(priceStr.toString().replace('.', '').replace(',', '.'));
+                        if (!isNaN(p) && p > 0) {
+                            resolve(p);
+                            return;
+                        }
+                    }
+                } catch (e) {}
+                resolve(null);
+            };
+
+            script.onerror = function() {
+                if (!isResolved) {
+                    delete window[callbackName];
+                    if (script.parentNode) document.body.removeChild(script);
+                    resolve(null);
                 }
-            }
-        } catch (e) {}
+            };
 
-        // 3. Kaynak: Google Finance Proxy
-        try {
-            const url3 = `https://www.google.com/finance/quote/${cleanSymbol}:IST`;
-            const proxy3 = `https://api.allorigins.win/get?url=${encodeURIComponent(url3)}&_=${ts}`;
-            const res3 = await fetch(proxy3);
-            if (res3.ok) {
-                const data3 = await res3.json();
-                const match = data3.contents.match(/data-last-price="([0-9.]+)"/);
-                if (match && match[1]) {
-                    const price3 = parseFloat(match[1]);
-                    if (price3 && price3 > 0) return price3;
+            // Mynet BİST Servisi JSONP
+            script.src = `https://finans.mynet.com/api/hisse/gethisseharita?hisse=${cleanSymbol}&callback=${callbackName}&_=${new Date().getTime()}`;
+            document.body.appendChild(script);
+
+            setTimeout(() => {
+                if (!isResolved) {
+                    delete window[callbackName];
+                    if (script.parentNode) document.body.removeChild(script);
+                    resolve(null);
                 }
-            }
-        } catch (e) {}
-
-        return null;
+            }, 3000);
+        });
     }
 
     function addAsset() {
@@ -406,15 +409,12 @@
     }
 
     async function fetchLivePrices() {
-        if (assets.length === 0) {
-            alert("Sorgulanacak hisse bulunamadı. Lütfen önce hisse ekleyin.");
-            return;
-        }
+        if (assets.length === 0) return;
 
         const statusText = document.getElementById('statusText');
         const refreshBtn = document.getElementById('refreshBtn');
 
-        if(statusText) statusText.innerText = "Canlı Veriler Çekiliyor...";
+        if(statusText) statusText.innerText = "Kapanış / Son Fiyatlar Çekiliyor...";
         if(refreshBtn) {
             refreshBtn.disabled = true;
             refreshBtn.innerText = "⏳ Güncelleniyor...";
@@ -422,7 +422,7 @@
 
         let updatedCount = 0;
         for (let item of assets) {
-            const livePrice = await fetchSinglePrice(item.symbol);
+            const livePrice = await fetchPriceJSONP(item.symbol);
             if (livePrice && livePrice > 0) {
                 item.currentPrice = livePrice;
                 updatedCount++;
@@ -433,8 +433,7 @@
             saveAndRender();
             if(statusText) statusText.innerText = `Son Güncelleme: ${new Date().toLocaleTimeString('tr-TR')}`;
         } else {
-            if(statusText) statusText.innerText = "Veri Çekilemedi (Manuel Fiyatı Kullanın)";
-            alert("Canlı fiyat sunucusuna bağlanılamadı. Borsanın açık olduğundan emin olun veya 'Fiyat Değiştir' butonundan manuel güncelleyin.");
+            if(statusText) statusText.innerText = "Fiyat Bağlantısı Sağlanamadı";
         }
 
         if(refreshBtn) {
@@ -445,7 +444,7 @@
 
     function updatePriceManual(index) {
         const item = assets[index];
-        const newPriceStr = prompt(`${item.symbol} için güncel fiyatı girin:`, item.currentPrice);
+        const newPriceStr = prompt(`${item.symbol} için güncel/kapanış fiyatını girin:`, item.currentPrice);
         const newPrice = parseNum(newPriceStr);
         if (newPrice > 0) {
             item.currentPrice = newPrice;
