@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BİST Portföy Takip v4</title>
+    <title>Portföyüm v4</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -183,7 +183,7 @@
 
 <div class="container">
     <header>
-        <h1>BİST Portföy Takip v4</h1>
+        <h1>Portföyüm v4</h1>
         <div class="live-status">
             <span class="pulse-dot"></span> Canlı Veri Servisi
         </div>
@@ -314,11 +314,9 @@
         const initialPrice = manualPrice > 0 ? manualPrice : (newAvgCost > 0 ? newAvgCost : 0);
         if (newAvgCost === 0 && initialPrice > 0) newAvgCost = initialPrice;
 
-        // Hisse portföyde var mı kontrol et (ASELS birleştirme mantığı)
         const existingIndex = assets.findIndex(a => a.symbol === symbol);
 
         if (existingIndex > -1) {
-            // Var olan hisse: Adet birleştir ve ağırlıklı ortalama maliyet hesapla
             let existing = assets[existingIndex];
             let totalQty = existing.amount + newAmount;
             
@@ -329,7 +327,6 @@
             existing.avgCost = finalAvgCost;
             if (manualPrice > 0) existing.currentPrice = manualPrice;
         } else {
-            // Yeni hisse: Direkt ekle
             assets.push({ 
                 symbol: symbol, 
                 amount: newAmount, 
@@ -338,7 +335,6 @@
             });
         }
 
-        // Formu temizle
         symbolInput.value = '';
         amountInput.value = '';
         avgCostInput.value = '';
