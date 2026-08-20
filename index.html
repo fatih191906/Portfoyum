@@ -1,17 +1,1853 @@
-İŞ YATIRIM
-    ↓
-BIST HİSSE LİSTESİ
-    ↓
-SASA → fiyat
-ASELS → fiyat
-THYAO → fiyat
-TUPRS → fiyat
-...
-    ↓
-PORTFÖYÜNDEKİ HİSSELERLE EŞLEŞTİR
-    ↓
-GÜNCEL FİYAT
-    ↓
-PORTFÖY DEĞERİ
-    ↓
-KÂR / ZARAR
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Portföyüm - İş Yatırım</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+:root {
+    --bg-color:#0b0f19;
+    --card-bg:#151c2c;
+    --card-border:#232d42;
+    --text-main:#f3f4f6;
+    --text-muted:#9ca3af;
+    --accent-primary:#38bdf8;
+    --accent-hover:#0284c7;
+    --green-bg:rgba(34,197,94,.1);
+    --green-text:#4ade80;
+    --red-bg:rgba(239,68,68,.1);
+    --red-text:#f87171;
+    --yellow-bg:rgba(234,179,8,.1);
+    --yellow-text:#facc15;
+}
+
+* {
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body {
+    font-family:'Inter',sans-serif;
+    background:var(--bg-color);
+    color:var(--text-main);
+    padding:24px 16px;
+    line-height:1.5;
+}
+
+.container {
+    max-width:1400px;
+    margin:auto;
+}
+
+header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:20px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--card-border);
+}
+
+header h1 {
+    color:var(--accent-primary);
+    font-size:1.5rem;
+}
+
+.live-status {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:var(--green-text);
+    background:var(--green-bg);
+    padding:6px 14px;
+    border-radius:20px;
+}
+
+.pulse-dot {
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:var(--green-text);
+    box-shadow:0 0 8px var(--green-text);
+}
+
+.grid-summary {
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+    margin-bottom:24px;
+}
+
+.card {
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:12px;
+    padding:20px;
+}
+
+.card-title {
+    font-size:.8rem;
+    color:var(--text-muted);
+    font-weight:600;
+    text-transform:uppercase;
+    margin-bottom:6px;
+}
+
+.card-value {
+    font-size:1.6rem;
+    font-weight:700;
+}
+
+.section-card {
+    background:var(--card-bg);
+    border:1px solid var(--card-border);
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:24px;
+}
+
+.section-title {
+    font-size:1.1rem;
+    font-weight:600;
+}
+
+.form-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr 140px;
+    gap:12px;
+    margin-top:16px;
+}
+
+input {
+    background:var(--bg-color);
+    border:1px solid var(--card-border);
+    color:var(--text-main);
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:.9rem;
+    outline:none;
+    width:100%;
+}
+
+input:focus {
+    border-color:var(--accent-primary);
+}
+
+.btn-primary {
+    background:var(--accent-primary);
+    color:#0b0f19;
+    font-weight:700;
+    border:none;
+    padding:12px 20px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.btn-primary:hover {
+    background:var(--accent-hover);
+    color:white;
+}
+
+.portfolio-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:15px;
+}
+
+.controls {
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.btn-refresh {
+    background:var(--accent-primary);
+    color:#0b0f19;
+    border:none;
+    padding:11px 18px;
+    border-radius:8px;
+    font-weight:700;
+    cursor:pointer;
+}
+
+.btn-refresh:hover {
+    background:var(--accent-hover);
+    color:white;
+}
+
+.btn-refresh:disabled {
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.auto-box {
+    display:flex;
+    align-items:center;
+    gap:7px;
+    background:var(--bg-color);
+    border:1px solid var(--card-border);
+    padding:9px 12px;
+    border-radius:8px;
+    font-size:.82rem;
+    color:var(--text-muted);
+}
+
+.auto-box input {
+    width:auto;
+}
+
+.market-info {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:12px;
+}
+
+.info-badge {
+    background:var(--bg-color);
+    border:1px solid var(--card-border);
+    color:var(--text-muted);
+    padding:6px 10px;
+    border-radius:7px;
+    font-size:.75rem;
+}
+
+.info-badge strong {
+    color:var(--text-main);
+}
+
+.status-message {
+    min-height:24px;
+    margin-bottom:10px;
+    font-size:.82rem;
+}
+
+.success { color:var(--green-text); }
+.warning { color:var(--yellow-text); }
+.error { color:var(--red-text); }
+
+.table-container {
+    overflow-x:auto;
+    border:1px solid var(--card-border);
+    border-radius:12px;
+}
+
+table {
+    width:100%;
+    border-collapse:collapse;
+    font-size:.9rem;
+}
+
+th {
+    background:#111827;
+    color:var(--text-muted);
+    padding:14px 16px;
+    border-bottom:1px solid var(--card-border);
+    font-size:.75rem;
+    text-transform:uppercase;
+    white-space:nowrap;
+}
+
+td {
+    padding:14px 16px;
+    border-bottom:1px solid var(--card-border);
+    white-space:nowrap;
+}
+
+.price-input {
+    width:110px;
+    padding:6px 10px;
+    border-radius:6px;
+    text-align:right;
+    border:1px solid var(--card-border);
+    background:var(--bg-color);
+    color:var(--accent-primary);
+    font-weight:600;
+}
+
+.badge {
+    display:inline-block;
+    padding:4px 8px;
+    border-radius:6px;
+    font-weight:600;
+}
+
+.badge-positive {
+    background:var(--green-bg);
+    color:var(--green-text);
+}
+
+.badge-negative {
+    background:var(--red-bg);
+    color:var(--red-text);
+}
+
+.positive { color:var(--green-text); }
+.negative { color:var(--red-text); }
+
+.btn-delete {
+    background:transparent;
+    border:1px solid var(--card-border);
+    color:var(--red-text);
+    padding:5px 9px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+@media(max-width:768px) {
+
+    body {
+        padding:12px 8px;
+    }
+
+    .form-grid {
+        grid-template-columns:1fr;
+    }
+
+    .section-card {
+        padding:14px;
+    }
+
+    .portfolio-header {
+        align-items:flex-start;
+    }
+
+    .controls {
+        width:100%;
+    }
+
+    .btn-refresh {
+        width:100%;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+
+    <h1>Portföyüm 🚀</h1>
+
+    <div class="live-status">
+        <span class="pulse-dot"></span>
+        <span id="statusText">Sistem Hazır</span>
+    </div>
+
+</header>
+
+
+<!-- ÖZET -->
+
+<div class="grid-summary">
+
+    <div class="card">
+        <div class="card-title">Portföy Değeri</div>
+        <div class="card-value" id="totalValue">₺0,00</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Toplam Maliyet</div>
+        <div class="card-value" id="totalCost">₺0,00</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Toplam Kar / Zarar</div>
+        <div class="card-value" id="totalProfit">₺0,00</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Kar Oranı</div>
+        <div class="card-value" id="totalProfitRatio">%0,00</div>
+    </div>
+
+</div>
+
+
+<!-- HİSSE EKLE -->
+
+<div class="section-card">
+
+    <div class="section-title">
+        Yeni Hisse Ekle
+    </div>
+
+    <div class="form-grid">
+
+        <input
+            type="text"
+            id="symbol"
+            placeholder="Hisse (Örn: SASA)"
+        >
+
+        <input
+            type="text"
+            id="amount"
+            placeholder="Adet (Örn: 1000)"
+        >
+
+        <input
+            type="text"
+            id="avgCost"
+            placeholder="Ort. Maliyet (₺)"
+        >
+
+        <button
+            class="btn-primary"
+            onclick="addAsset()"
+        >
+            Hisse Ekle
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- PORTFÖY -->
+
+<div class="section-card">
+
+    <div class="portfolio-header">
+
+        <div class="section-title">
+            Hisse Portföyü
+        </div>
+
+        <div class="controls">
+
+            <label class="auto-box">
+
+                <input
+                    type="checkbox"
+                    id="autoUpdate"
+                    checked
+                >
+
+                30 saniyede otomatik güncelle
+
+            </label>
+
+            <button
+                class="btn-refresh"
+                id="refreshButton"
+                onclick="fetchAllLivePrices()"
+            >
+                🔄 İş Yatırım'dan Güncelle
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="market-info">
+
+        <div class="info-badge">
+            Portföy:
+            <strong id="portfolioCount">0</strong>
+        </div>
+
+        <div class="info-badge">
+            İş Yatırım:
+            <strong id="marketCount">-</strong>
+        </div>
+
+        <div class="info-badge">
+            Güncellenen:
+            <strong id="successCount">-</strong>
+        </div>
+
+        <div class="info-badge">
+            Bulunamayan:
+            <strong id="failedCount">-</strong>
+        </div>
+
+        <div class="info-badge">
+            Son kontrol:
+            <strong id="lastUpdate">-</strong>
+        </div>
+
+    </div>
+
+
+    <div
+        id="updateMessage"
+        class="status-message"
+    ></div>
+
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Hisse</th>
+                    <th>Adet</th>
+                    <th>Ort. Maliyet</th>
+                    <th>Güncel Fiyat</th>
+                    <th>Toplam Değer</th>
+                    <th>Kar / Zarar</th>
+                    <th>Oran</th>
+                    <th>İşlem</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="assetList"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   AYARLAR
+========================================================= */
+
+const STORAGE_KEY = "bist_assets_v36";
+
+const AUTO_UPDATE_TIME = 30000;
+
+
+/*
+ * İş Yatırım'ın toplu hisse sayfası.
+ *
+ * Sayfada Hisse / Son Fiyat(TL) tablosu bulunuyor.
+ */
+
+const IS_YATIRIM_URL =
+    "https://www.isyatirim.com.tr/tr-tr/analiz/hisse/Sayfalar/default.aspx";
+
+
+/*
+ * CORS geçidi.
+ *
+ * Telefon tarayıcısından İş Yatırım sayfasını
+ * okumamızı sağlamak için kullanılıyor.
+ */
+
+const PROXY_URL =
+    "https://api.allorigins.win/raw?url=" +
+    encodeURIComponent(IS_YATIRIM_URL);
+
+
+/* =========================================================
+   DEĞİŞKENLER
+========================================================= */
+
+let assets =
+    JSON.parse(
+        localStorage.getItem(STORAGE_KEY)
+    ) || [];
+
+
+let marketPrices = {};
+
+let isUpdating = false;
+
+let autoTimer = null;
+
+
+/* =========================================================
+   SAYI OKUMA
+========================================================= */
+
+function parseNum(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return 0;
+    }
+
+    let text =
+        String(value)
+        .trim()
+        .replace(/₺/g,"")
+        .replace(/\s/g,"");
+
+
+    /*
+     * İş Yatırım:
+     *
+     * 67,05
+     * 1.234,56
+     */
+
+    if (text.includes(",")) {
+
+        text =
+            text
+            .replace(/\./g,"")
+            .replace(",",".");
+    }
+
+
+    const number =
+        parseFloat(text);
+
+
+    return isNaN(number)
+        ? 0
+        : number;
+}
+
+
+/* =========================================================
+   SEMBOL
+========================================================= */
+
+function cleanSymbol(symbol) {
+
+    return String(symbol || "")
+        .toUpperCase()
+        .trim()
+        .replace(".IS","");
+}
+
+
+/* =========================================================
+   KAYDET
+========================================================= */
+
+function saveAssets() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(assets)
+    );
+}
+
+
+/* =========================================================
+   MESAJ
+========================================================= */
+
+function showMessage(
+    text,
+    type = ""
+) {
+
+    const el =
+        document.getElementById(
+            "updateMessage"
+        );
+
+    el.innerText =
+        text;
+
+    el.className =
+        "status-message";
+
+    if (type) {
+        el.classList.add(type);
+    }
+}
+
+
+/* =========================================================
+   İŞ YATIRIM SAYFASINI AL
+========================================================= */
+
+async function getIsYatirimPage() {
+
+    const url =
+        PROXY_URL +
+        "&t=" +
+        Date.now();
+
+
+    const response =
+        await fetch(
+            url,
+            {
+                cache:"no-store"
+            }
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "İş Yatırım verisi alınamadı. HTTP " +
+            response.status
+        );
+    }
+
+
+    return await response.text();
+}
+
+
+/* =========================================================
+   HTML TABLOSUNU OKU
+========================================================= */
+
+function parseIsYatirimTable(html) {
+
+    const parser =
+        new DOMParser();
+
+
+    const doc =
+        parser.parseFromString(
+            html,
+            "text/html"
+        );
+
+
+    const prices = {};
+
+
+    const tables =
+        Array.from(
+            doc.querySelectorAll("table")
+        );
+
+
+    /*
+     * İş Yatırım sayfasında
+     * Hisse / Son Fiyat (TL)
+     * başlıklı tabloyu bul.
+     */
+
+    let targetTable = null;
+
+
+    for (
+        const table of tables
+    ) {
+
+        const headers =
+            Array.from(
+                table.querySelectorAll("th")
+            )
+            .map(
+                x =>
+                    x.innerText
+                    .trim()
+                    .toUpperCase()
+            );
+
+
+        const tableText =
+            table.innerText
+            .toUpperCase();
+
+
+        if (
+            (
+                headers.some(
+                    h =>
+                        h.includes("HİSSE") ||
+                        h.includes("HISSE")
+                )
+            )
+            &&
+            (
+                headers.some(
+                    h =>
+                        h.includes("SON FİYAT") ||
+                        h.includes("SON FIYAT")
+                )
+            )
+        ) {
+
+            targetTable =
+                table;
+
+            break;
+        }
+
+
+        /*
+         * Başlıklar th olarak gelmezse
+         * tablo metninden de kontrol et.
+         */
+
+        if (
+            tableText.includes("SON FİYAT")
+            &&
+            tableText.includes("HİSSE")
+        ) {
+
+            targetTable =
+                table;
+
+            break;
+        }
+    }
+
+
+    if (!targetTable) {
+
+        console.log(
+            "İş Yatırım sayfasındaki tablolar:",
+            tables.length
+        );
+
+        throw new Error(
+            "İş Yatırım hisse tablosu bulunamadı."
+        );
+    }
+
+
+    /*
+     * -----------------------------------------------------
+     * SÜTUNLARI BUL
+     * -----------------------------------------------------
+     */
+
+    let symbolIndex = 0;
+
+    let priceIndex = 1;
+
+
+    const headerCells =
+        Array.from(
+            targetTable.querySelectorAll("thead th")
+        );
+
+
+    if (
+        headerCells.length
+    ) {
+
+        headerCells.forEach(
+            (cell,index) => {
+
+                const text =
+                    cell.innerText
+                    .trim()
+                    .toUpperCase();
+
+
+                if (
+                    text.includes("HİSSE") ||
+                    text.includes("HISSE")
+                ) {
+
+                    symbolIndex =
+                        index;
+                }
+
+
+                if (
+                    text.includes("SON FİYAT") ||
+                    text.includes("SON FIYAT")
+                ) {
+
+                    priceIndex =
+                        index;
+                }
+
+            }
+        );
+
+    }
+
+
+    /*
+     * -----------------------------------------------------
+     * SATIRLARI OKU
+     * -----------------------------------------------------
+     */
+
+    const rows =
+        Array.from(
+            targetTable.querySelectorAll("tbody tr")
+        );
+
+
+    rows.forEach(
+        row => {
+
+            const cells =
+                Array.from(
+                    row.querySelectorAll("td")
+                );
+
+
+            if (
+                cells.length < 2
+            ) {
+                return;
+            }
+
+
+            const symbol =
+                cleanSymbol(
+                    cells[symbolIndex]
+                    ?.innerText
+                );
+
+
+            const price =
+                parseNum(
+                    cells[priceIndex]
+                    ?.innerText
+                );
+
+
+            /*
+             * Gerçek BIST sembolü gibi görünüyorsa
+             */
+
+            if (
+                symbol &&
+                /^[A-Z0-9]+$/.test(symbol) &&
+                price > 0
+            ) {
+
+                prices[
+                    symbol
+                ] =
+                    price;
+            }
+
+        }
+    );
+
+
+    return prices;
+}
+
+
+/* =========================================================
+   İŞ YATIRIM'DAN TÜM FİYATLARI AL
+========================================================= */
+
+async function fetchMarketPrices() {
+
+    const html =
+        await getIsYatirimPage();
+
+
+    const prices =
+        parseIsYatirimTable(
+            html
+        );
+
+
+    const count =
+        Object.keys(
+            prices
+        ).length;
+
+
+    if (
+        count === 0
+    ) {
+
+        throw new Error(
+            "İş Yatırım tablosundan fiyat okunamadı."
+        );
+    }
+
+
+    return prices;
+}
+
+
+/* =========================================================
+   ANA GÜNCELLEME
+========================================================= */
+
+async function fetchAllLivePrices() {
+
+    if (
+        isUpdating
+    ) {
+        return;
+    }
+
+
+    if (
+        assets.length === 0
+    ) {
+
+        showMessage(
+            "Önce portföye hisse ekleyin.",
+            "warning"
+        );
+
+        return;
+    }
+
+
+    isUpdating =
+        true;
+
+
+    const button =
+        document.getElementById(
+            "refreshButton"
+        );
+
+
+    const status =
+        document.getElementById(
+            "statusText"
+        );
+
+
+    button.disabled =
+        true;
+
+
+    button.innerText =
+        "⏳ İş Yatırım okunuyor...";
+
+
+    status.innerText =
+        "İş Yatırım'dan fiyatlar alınıyor...";
+
+
+    showMessage(
+        "İş Yatırım'ın toplu BIST fiyat tablosu okunuyor..."
+    );
+
+
+    try {
+
+        /*
+         * TEK İSTEK
+         */
+
+        const prices =
+            await fetchMarketPrices();
+
+
+        marketPrices =
+            prices;
+
+
+        const marketCount =
+            Object.keys(
+                prices
+            ).length;
+
+
+        document.getElementById(
+            "marketCount"
+        ).innerText =
+            marketCount;
+
+
+        let success =
+            0;
+
+
+        let failed =
+            0;
+
+
+        const missing = [];
+
+
+        /*
+         * PORTFÖYÜ EŞLEŞTİR
+         */
+
+        assets.forEach(
+            asset => {
+
+                const symbol =
+                    cleanSymbol(
+                        asset.symbol
+                    );
+
+
+                const price =
+                    prices[
+                        symbol
+                    ];
+
+
+                if (
+                    price !== undefined &&
+                    price > 0
+                ) {
+
+                    asset.currentPrice =
+                        price;
+
+                    success++;
+
+                } else {
+
+                    failed++;
+
+                    missing.push(
+                        symbol
+                    );
+                }
+
+            }
+        );
+
+
+        saveAssets();
+
+        render();
+
+
+        document.getElementById(
+            "successCount"
+        ).innerText =
+            success;
+
+
+        document.getElementById(
+            "failedCount"
+        ).innerText =
+            failed;
+
+
+        const time =
+            new Date()
+            .toLocaleTimeString(
+                "tr-TR"
+            );
+
+
+        document.getElementById(
+            "lastUpdate"
+        ).innerText =
+            time;
+
+
+        /*
+         * SONUÇ
+         */
+
+        if (
+            failed === 0
+        ) {
+
+            status.innerText =
+                "✓ Güncelleme başarılı";
+
+
+            showMessage(
+                `✓ ${success} hissenin tamamı İş Yatırım'dan güncellendi. Toplam ${marketCount} hisse okundu.`,
+                "success"
+            );
+
+        } else {
+
+            status.innerText =
+                `✓ ${success} hisse güncellendi`;
+
+
+            const firstMissing =
+                missing
+                .slice(0,10)
+                .join(", ");
+
+
+            showMessage(
+                `✓ ${success} güncellendi. ⚠ ${failed} bulunamadı: ${firstMissing}`,
+                "warning"
+            );
+        }
+
+
+    } catch(error) {
+
+        console.error(
+            "İŞ YATIRIM HATASI:",
+            error
+        );
+
+
+        status.innerText =
+            "❌ Veri alınamadı";
+
+
+        showMessage(
+            "❌ İş Yatırım verisi alınamadı. Mevcut fiyatlar korunuyor.",
+            "error"
+        );
+
+    } finally {
+
+        button.disabled =
+            false;
+
+
+        button.innerText =
+            "🔄 İş Yatırım'dan Güncelle";
+
+
+        isUpdating =
+            false;
+
+
+        setTimeout(
+            () => {
+
+                if (
+                    !isUpdating
+                ) {
+
+                    status.innerText =
+                        "Sistem Hazır";
+                }
+
+            },
+            5000
+        );
+    }
+}
+
+
+/* =========================================================
+   MANUEL FİYAT
+========================================================= */
+
+function updateInlinePrice(
+    index,
+    value
+) {
+
+    const price =
+        parseNum(value);
+
+
+    if (
+        price >= 0
+    ) {
+
+        assets[
+            index
+        ].currentPrice =
+            price;
+
+
+        saveAssets();
+
+        render();
+    }
+}
+
+
+/* =========================================================
+   HİSSE EKLE
+========================================================= */
+
+function addAsset() {
+
+    const symbol =
+        cleanSymbol(
+            document.getElementById(
+                "symbol"
+            ).value
+        );
+
+
+    const amount =
+        parseNum(
+            document.getElementById(
+                "amount"
+            ).value
+        );
+
+
+    const avgCost =
+        parseNum(
+            document.getElementById(
+                "avgCost"
+            ).value
+        );
+
+
+    if (
+        !symbol ||
+        amount <= 0 ||
+        avgCost <= 0
+    ) {
+
+        alert(
+            "Hisse, adet ve maliyet alanlarını doldurun."
+        );
+
+        return;
+    }
+
+
+    const existingIndex =
+        assets.findIndex(
+            a =>
+                cleanSymbol(
+                    a.symbol
+                ) === symbol
+        );
+
+
+    if (
+        existingIndex >= 0
+    ) {
+
+        const existing =
+            assets[
+                existingIndex
+            ];
+
+
+        const oldCost =
+            existing.amount *
+            existing.avgCost;
+
+
+        const newCost =
+            amount *
+            avgCost;
+
+
+        const totalAmount =
+            existing.amount +
+            amount;
+
+
+        existing.amount =
+            totalAmount;
+
+
+        existing.avgCost =
+            (
+                oldCost +
+                newCost
+            ) /
+            totalAmount;
+
+
+        if (
+            marketPrices[
+                symbol
+            ]
+        ) {
+
+            existing.currentPrice =
+                marketPrices[
+                    symbol
+                ];
+        }
+
+    } else {
+
+        assets.push({
+
+            symbol:symbol,
+
+            amount:amount,
+
+            avgCost:avgCost,
+
+            currentPrice:
+                marketPrices[
+                    symbol
+                ] ||
+                avgCost
+
+        });
+
+    }
+
+
+    document.getElementById(
+        "symbol"
+    ).value = "";
+
+
+    document.getElementById(
+        "amount"
+    ).value = "";
+
+
+    document.getElementById(
+        "avgCost"
+    ).value = "";
+
+
+    saveAssets();
+
+    render();
+
+
+    showMessage(
+        `${symbol} portföye eklendi.`,
+        "success"
+    );
+}
+
+
+/* =========================================================
+   HİSSE SİL
+========================================================= */
+
+function deleteAsset(index) {
+
+    const symbol =
+        assets[
+            index
+        ].symbol;
+
+
+    if (
+        confirm(
+            `${symbol} hissesini silmek istediğinize emin misiniz?`
+        )
+    ) {
+
+        assets.splice(
+            index,
+            1
+        );
+
+
+        saveAssets();
+
+        render();
+    }
+}
+
+
+/* =========================================================
+   OTOMATİK GÜNCELLEME
+========================================================= */
+
+function startAutoUpdate() {
+
+    stopAutoUpdate();
+
+
+    autoTimer =
+        setInterval(
+            () => {
+
+                if (
+                    document.getElementById(
+                        "autoUpdate"
+                    ).checked &&
+                    assets.length > 0 &&
+                    !isUpdating
+                ) {
+
+                    fetchAllLivePrices();
+                }
+
+            },
+            AUTO_UPDATE_TIME
+        );
+}
+
+
+function stopAutoUpdate() {
+
+    if (
+        autoTimer
+    ) {
+
+        clearInterval(
+            autoTimer
+        );
+
+        autoTimer =
+            null;
+    }
+}
+
+
+document.getElementById(
+    "autoUpdate"
+).addEventListener(
+    "change",
+    function() {
+
+        if (
+            this.checked
+        ) {
+
+            startAutoUpdate();
+
+            showMessage(
+                "Otomatik güncelleme açıldı.",
+                "success"
+            );
+
+        } else {
+
+            stopAutoUpdate();
+
+            showMessage(
+                "Otomatik güncelleme kapatıldı.",
+                "warning"
+            );
+        }
+
+    }
+);
+
+
+/* =========================================================
+   TABLOYU ÇİZ
+========================================================= */
+
+function render() {
+
+    const list =
+        document.getElementById(
+            "assetList"
+        );
+
+
+    list.innerHTML = "";
+
+
+    let totalValue = 0;
+
+    let totalCost = 0;
+
+
+    document.getElementById(
+        "portfolioCount"
+    ).innerText =
+        assets.length;
+
+
+    if (
+        assets.length === 0
+    ) {
+
+        list.innerHTML = `
+            <tr>
+                <td
+                    colspan="8"
+                    style="
+                        text-align:center;
+                        color:var(--text-muted);
+                        padding:30px;
+                    "
+                >
+                    Henüz hisse eklenmedi.
+                </td>
+            </tr>
+        `;
+
+    }
+
+
+    assets.forEach(
+        (asset,index) => {
+
+            const amount =
+                Number(
+                    asset.amount
+                ) || 0;
+
+
+            const avgCost =
+                Number(
+                    asset.avgCost
+                ) || 0;
+
+
+            const currentPrice =
+                Number(
+                    asset.currentPrice
+                ) || 0;
+
+
+            const cost =
+                amount *
+                avgCost;
+
+
+            const value =
+                amount *
+                currentPrice;
+
+
+            const profit =
+                value -
+                cost;
+
+
+            const ratio =
+                cost > 0
+                ? (
+                    profit /
+                    cost
+                ) * 100
+                : 0;
+
+
+            totalCost +=
+                cost;
+
+
+            totalValue +=
+                value;
+
+
+            const positive =
+                profit >= 0;
+
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.innerHTML = `
+
+                <td>
+                    <strong
+                        style="
+                            color:var(--accent-primary)
+                        "
+                    >
+                        ${asset.symbol}
+                    </strong>
+                </td>
+
+                <td>
+                    ${amount.toLocaleString("tr-TR")}
+                </td>
+
+                <td>
+                    ₺${avgCost.toLocaleString(
+                        "tr-TR",
+                        {
+                            minimumFractionDigits:2,
+                            maximumFractionDigits:2
+                        }
+                    )}
+                </td>
+
+                <td>
+
+                    <input
+                        class="price-input"
+                        type="text"
+                        value="${currentPrice}"
+                        onchange="
+                            updateInlinePrice(
+                                ${index},
+                                this.value
+                            )
+                        "
+                    >
+
+                </td>
+
+                <td>
+                    ₺${value.toLocaleString(
+                        "tr-TR",
+                        {
+                            minimumFractionDigits:2,
+                            maximumFractionDigits:2
+                        }
+                    )}
+                </td>
+
+                <td
+                    class="${
+                        positive
+                        ? "positive"
+                        : "negative"
+                    }"
+                >
+                    ₺${profit.toLocaleString(
+                        "tr-TR",
+                        {
+                            minimumFractionDigits:2,
+                            maximumFractionDigits:2
+                        }
+                    )}
+                </td>
+
+                <td>
+
+                    <span
+                        class="
+                            badge
+                            ${
+                                positive
+                                ? "badge-positive"
+                                : "badge-negative"
+                            }
+                        "
+                    >
+                        %${ratio.toFixed(2)}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <button
+                        class="btn-delete"
+                        onclick="
+                            deleteAsset(${index})
+                        "
+                    >
+                        🗑️ Sil
+                    </button>
+
+                </td>
+
+            `;
+
+
+            list.appendChild(
+                row
+            );
+
+        }
+    );
+
+
+    const totalProfit =
+        totalValue -
+        totalCost;
+
+
+    const totalRatio =
+        totalCost > 0
+        ? (
+            totalProfit /
+            totalCost
+        ) * 100
+        : 0;
+
+
+    document.getElementById(
+        "totalValue"
+    ).innerText =
+        `₺${totalValue.toLocaleString(
+            "tr-TR",
+            {
+                minimumFractionDigits:2,
+                maximumFractionDigits:2
+            }
+        )}`;
+
+
+    document.getElementById(
+        "totalCost"
+    ).innerText =
+        `₺${totalCost.toLocaleString(
+            "tr-TR",
+            {
+                minimumFractionDigits:2,
+                maximumFractionDigits:2
+            }
+        )}`;
+
+
+    const profitEl =
+        document.getElementById(
+            "totalProfit"
+        );
+
+
+    profitEl.innerText =
+        `₺${totalProfit.toLocaleString(
+            "tr-TR",
+            {
+                minimumFractionDigits:2,
+                maximumFractionDigits:2
+            }
+        )}`;
+
+
+    profitEl.className =
+        "card-value " +
+        (
+            totalProfit >= 0
+            ? "positive"
+            : "negative"
+        );
+
+
+    const ratioEl =
+        document.getElementById(
+            "totalProfitRatio"
+        );
+
+
+    ratioEl.innerText =
+        `%${totalRatio.toFixed(2)}`;
+
+
+    ratioEl.className =
+        "card-value " +
+        (
+            totalRatio >= 0
+            ? "positive"
+            : "negative"
+        );
+}
+
+
+/* =========================================================
+   BAŞLANGIÇ
+========================================================= */
+
+render();
+
+startAutoUpdate();
+
+
+/*
+ * Sayfa açıldıktan 1 saniye sonra
+ * otomatik ilk kontrol.
+ */
+
+if (
+    assets.length > 0
+) {
+
+    setTimeout(
+        () => {
+
+            fetchAllLivePrices();
+
+        },
+        1000
+    );
+}
+
+</script>
+
+</body>
+</html>
