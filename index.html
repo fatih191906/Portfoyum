@@ -2,50 +2,49 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Gelişmiş Borsa Portföyü</title>
+    <title>Borsa Portföy Takip</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .card { border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        th { cursor: pointer; transition: background 0.2s; }
-        th:hover { background-color: #e2e6ea; }
-        .badge-kurum { background-color: #dee2e6; color: #495057; }
-        .detay-satir { background-color: #f1f3f5 !important; }
+        body { background-color: #f4f7f6; }
+        .card { border-radius: 10px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        th { cursor: pointer; background-color: #e9ecef; }
+        .pos { color: #198754; font-weight: bold; }
+        .neg { color: #dc3545; font-weight: bold; }
+        .badge-kurum { background-color: #6c757d; color: white; }
     </style>
 </head>
 <body>
 
 <div class="container py-4">
-    <h2 class="fw-bold text-primary mb-4">📈 Portföy Yönetim Paneli</h2>
+    <h3 class="mb-4 text-primary fw-bold">📊 Yatırım Portföyüm</h3>
     
     <div class="row">
-        <!-- Giriş Formu -->
         <div class="col-md-4">
             <div class="card p-4">
-                <h5>Yeni Alım Ekle</h5>
-                <input type="text" id="hisseKodu" class="form-control mb-2" placeholder="Hisse (Örn: SASA)">
-                <input type="text" id="hisseKurum" class="form-control mb-2" placeholder="Kurum (Örn: İnfo)">
-                <input type="number" id="hisseAdet" class="form-control mb-2" placeholder="Adet">
-                <input type="number" id="hisseMaliyet" class="form-control mb-3" placeholder="Maliyet">
-                <button class="btn btn-primary w-100" onclick="portfoyeEkle()">Ekle</button>
+                <h5>Alım Ekle</h5>
+                <input type="text" id="hKodu" class="form-control mb-2" placeholder="Hisse (Örn: SASA)">
+                <input type="text" id="hKurum" class="form-control mb-2" placeholder="Aracı Kurum">
+                <input type="number" id="hAdet" class="form-control mb-2" placeholder="Adet">
+                <input type="number" id="hMaliyet" class="form-control mb-3" placeholder="Maliyet (TL)">
+                <button class="btn btn-success w-100" onclick="ekle()">Portföye Ekle</button>
             </div>
         </div>
 
-        <!-- Portföy Listesi -->
         <div class="col-md-8">
             <div class="card p-4">
-                <table class="table table-hover" id="portfoyTablosu">
-                    <thead class="table-light">
+                <table class="table table-hover align-middle" id="tablo">
+                    <thead>
                         <tr>
                             <th></th>
                             <th onclick="sirala('kurum')">Kurum ⇅</th>
                             <th onclick="sirala('kod')">Hisse ⇅</th>
-                            <th onclick="sirala('toplamAdet')">Adet ⇅</th>
-                            <th>Ort. Maliyet</th>
-                            <th>Kâr/Zarar</th>
+                            <th onclick="sirala('toplamAdet')">Adet</th>
+                            <th onclick="sirala('karTL')">Kâr/Zarar (TL)</th>
+                            <th onclick="sirala('karOran')">%</th>
+                            <th>İşlem</th>
                         </tr>
                     </thead>
-                    <tbody></tbody>
+                    <tbody id="tbody"></tbody>
                 </table>
             </div>
         </div>
@@ -53,85 +52,82 @@
 </div>
 
 <script>
-    let portfoy = JSON.parse(localStorage.getItem('user_portfoy') || '[]');
+    // Canlı fiyat simülasyonu
+    let fiyatlar = { "SASA": 45.0, "EREGL": 52.0, "THYAO": 310.0 };
+    let portfoy = JSON.parse(localStorage.getItem('portfoyVerisi') || '[]');
 
-    function portfoyeEkle() {
-        let kod = document.getElementById('hisseKodu').value.toUpperCase().trim();
-        let kurum = document.getElementById('hisseKurum').value.trim();
-        let adet = parseFloat(document.getElementById('hisseAdet').value);
-        let maliyet = parseFloat(document.getElementById('hisseMaliyet').value);
+    function ekle() {
+        let kod = document.getElementById('hKodu').value.toUpperCase().trim();
+        let kurum = document.getElementById('hKurum').value.trim();
+        let adet = parseFloat(document.getElementById('hAdet').value);
+        let maliyet = parseFloat(document.getElementById('hMaliyet').value);
 
-        if (!kod || !kurum || isNaN(adet)) return alert("Eksik bilgi!");
+        if(!kod || !kurum || isNaN(adet) || isNaN(maliyet)) return alert("Lütfen tüm alanları doldur!");
 
         let mevcut = portfoy.find(i => i.kod === kod);
         let yeniIslem = { adet, maliyet, kurum, tarih: new Date().toLocaleDateString() };
 
-        if (mevcut) {
+        if(mevcut) {
             mevcut.islemGecmisi.push(yeniIslem);
-            hesapla(mevcut);
         } else {
-            portfoy.push({ kod, islemGecmisi: [yeniIslem], toplamAdet: adet, ortMaliyet: maliyet });
+            portfoy.push({ kod, islemGecmisi: [yeniIslem] });
         }
+        hesapla();
         kaydetVeCiz();
     }
 
-    function hesapla(item) {
-        let toplamTutar = 0;
-        item.toplamAdet = 0;
-        item.islemGecmisi.forEach(i => {
-            toplamTutar += (i.adet * i.maliyet);
-            item.toplamAdet += i.adet;
+    function hesapla() {
+        portfoy.forEach(item => {
+            let topAdet = 0, topTutar = 0;
+            item.islemGecmisi.forEach(i => {
+                topAdet += i.adet;
+                topTutar += (i.adet * i.maliyet);
+            });
+            item.toplamAdet = topAdet;
+            item.ortMaliyet = topTutar / topAdet;
+            let guncelFiyat = fiyatlar[item.kod] || item.ortMaliyet;
+            item.karTL = (guncelFiyat - item.ortMaliyet) * topAdet;
+            item.karOran = ((guncelFiyat - item.ortMaliyet) / item.ortMaliyet) * 100;
         });
-        item.ortMaliyet = toplamTutar / item.toplamAdet;
-    }
-
-    // Sıralama Mantığı
-    let yon = 1;
-    function sirala(key) {
-        yon *= -1;
-        portfoy.sort((a, b) => {
-            let valA = key === 'kurum' ? a.islemGecmisi[0].kurum : a[key];
-            let valB = key === 'kurum' ? b.islemGecmisi[0].kurum : b[key];
-            return (valA > valB ? 1 : -1) * yon;
-        });
-        portfoyuCiz();
     }
 
     function kaydetVeCiz() {
-        localStorage.setItem('user_portfoy', JSON.stringify(portfoy));
-        portfoyuCiz();
+        localStorage.setItem('portfoyVerisi', JSON.stringify(portfoy));
+        ciz();
     }
 
-    function portfoyuCiz() {
-        let tbody = document.querySelector("tbody");
+    function ciz() {
+        let tbody = document.getElementById('tbody');
         tbody.innerHTML = "";
-        portfoy.forEach((item, index) => {
-            let kurumText = item.islemGecmisi.length > 1 ? "Çoklu Kurum" : item.islemGecmisi[0].kurum;
+        portfoy.forEach((item, idx) => {
+            let kurum = item.islemGecmisi.length > 1 ? "Çoklu" : item.islemGecmisi[0].kurum;
+            let renk = item.karTL >= 0 ? "pos" : "neg";
             tbody.innerHTML += `
                 <tr>
-                    <td><button class="btn btn-sm btn-light" onclick="detayAc(${index})">+</button></td>
-                    <td><span class="badge badge-kurum">${kurumText}</span></td>
+                    <td><button class="btn btn-sm btn-outline-secondary" onclick="detayAc(${idx})">+</button></td>
+                    <td><span class="badge badge-kurum">${kurum}</span></td>
                     <td><b>${item.kod}</b></td>
                     <td>${item.toplamAdet}</td>
-                    <td>${item.ortMaliyet.toFixed(2)}</td>
-                    <td class="text-success">Hesaplanıyor</td>
-                </tr>
-                <tr id="detay-${index}" style="display:none" class="detay-satir">
-                    <td colspan="6">
-                        <table class="table table-sm">
-                            ${item.islemGecmisi.map(i => `<tr><td>${i.tarih}</td><td>${i.kurum}</td><td>${i.adet} Adet</td><td>${i.maliyet} TL</td></tr>`).join('')}
-                        </table>
-                    </td>
+                    <td class="${renk}">${item.karTL.toFixed(2)} TL</td>
+                    <td class="${renk}">${item.karOran.toFixed(2)}%</td>
+                    <td><button class="btn btn-sm btn-danger" onclick="sil(${idx})">Sil</button></td>
                 </tr>`;
         });
     }
 
-    function detayAc(idx) {
-        let d = document.getElementById('detay-' + idx);
-        d.style.display = d.style.display === "none" ? "table-row" : "none";
+    function sil(idx) {
+        portfoy.splice(idx, 1);
+        kaydetVeCiz();
     }
 
-    window.onload = portfoyuCiz;
+    function sirala(key) {
+        portfoy.sort((a,b) => (a[key] > b[key] ? -1 : 1));
+        ciz();
+    }
+
+    function detayAc(idx) { alert("Detaylar: " + JSON.stringify(portfoy[idx].islemGecmisi)); }
+
+    window.onload = () => { hesapla(); ciz(); };
 </script>
 </body>
 </html>
