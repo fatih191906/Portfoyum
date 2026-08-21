@@ -82,6 +82,7 @@
                                 <tr>
                                     <th style="width: 30px;"></th>
                                     <th>Hisse</th>
+                                    <th>Kurum</th>
                                     <th>Toplam Adet</th>
                                     <th>Ort. Maliyet</th>
                                     <th>Güncel Fiyat</th>
@@ -223,7 +224,7 @@
             tbody.innerHTML = "";
 
             if (!portfoy || portfoy.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Henüz portföyünüze eklenmiş bir hisse yok.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">Henüz portföyünüze eklenmiş bir hisse yok.</td></tr>`;
                 return;
             }
 
@@ -239,11 +240,24 @@
                     plusButton = `<button type="button" class="btn-plus-minus" onclick="detayAcKapat(${index})" id="btn-detay-${index}">+</button>`;
                 }
 
+                // Ana satırda gösterilecek kurum bilgisi (Tek alımsa o kurum, çoklu alımsa 'Çoklu Kurum')
+                let gorunenKurum = "-";
+                if (item.islemGecmisi && item.islemGecmisi.length > 0) {
+                    let ilkKurum = item.islemGecmisi[0].kurum;
+                    let tumuAyni = item.islemGecmisi.every(i => i.kurum === ilkKurum);
+                    if (tumuAyni) {
+                        gorunenKurum = `<span class="badge badge-kurum">${ilkKurum}</span>`;
+                    } else {
+                        gorunenKurum = `<span class="badge badge-kurum" title="Birden fazla kurumdan alım yapılmış">Çoklu Kurum</span>`;
+                    }
+                }
+
                 // Ana Satır
                 tbody.innerHTML += `
                     <tr>
                         <td class="text-center">${plusButton}</td>
                         <td><b>${item.kod}</b></td>
+                        <td>${gorunenKurum}</td>
                         <td>${item.toplamAdet}</td>
                         <td>${item.ortMaliyet.toFixed(2)} TL</td>
                         <td>${guncelFiyat.toFixed(2)} TL</td>
@@ -277,7 +291,7 @@
 
                     tbody.innerHTML += `
                         <tr id="detay-row-${index}" style="display: none;" class="detay-satir">
-                            <td colspan="8" class="p-2">
+                            <td colspan="9" class="p-2">
                                 <div class="ms-3 text-secondary small fw-bold mb-1">🔍 ${item.kod} - Alım Geçmişi Detayları:</div>
                                 <table class="table table-sm mb-0 bg-transparent">
                                     <tbody>${subRowsHtml}</tbody>
